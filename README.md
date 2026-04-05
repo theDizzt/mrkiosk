@@ -1,0 +1,2 @@
+This project uses OpenCV (Apache License 2.0)
+https://opencv.org/
