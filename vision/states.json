@@ -1,0 +1,47 @@
+{
+  "IDLE": {
+    "screen": "idle",
+    "target_button": null,
+    "message": "Waiting for user"
+  },
+  "LISTENING": {
+    "screen": "listening",
+    "target_button": null,
+    "message": "Listening for voice input"
+  },
+  "MENU_GUIDE": {
+    "screen": "menu",
+    "target_button": "americano",
+    "position": { "x": 1240, "y": 530 },
+    "message": "Guide user to Americano menu"
+  },
+  "OPTION_GUIDE": {
+    "screen": "option",
+    "target_button": "ice_option",
+    "position": { "x": 1420, "y": 640 },
+    "message": "Guide user to ice option"
+  },
+  "PAYMENT_GUIDE": {
+    "screen": "checkout",
+    "target_button": "payment",
+    "position": { "x": 1820, "y": 980 },
+    "message": "Guide user to payment button"
+  },
+  "CONFIRM": {
+    "screen": "confirm",
+    "target_button": "confirm",
+    "position": { "x": 1600, "y": 900 },
+    "message": "Order complete"
+  },
+  "ERROR_RECOVERY": {
+    "screen": "recovery",
+    "target_button": "back_to_valid_step",
+    "position": { "x": 300, "y": 950 },
+    "message": "Recover from wrong input"
+  },
+  "FAIL_SAFE": {
+    "screen": "failsafe",
+    "target_button": null,
+    "message": "LLM or voice help needed"
+  }
+}

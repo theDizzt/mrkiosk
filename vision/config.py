@@ -1,0 +1,16 @@
+STATE_MAP = {
+    0: "IDLE",
+    1: "LISTENING",
+    10: "MENU_GUIDE",
+    20: "OPTION_GUIDE",
+    30: "PAYMENT_GUIDE",
+    40: "CONFIRM",
+    90: "ERROR_RECOVERY",
+    99: "FAIL_SAFE"
+}
+
+ARUCO_DICT_NAME = "DICT_4X4_50"
+CAMERA_INDEX = 0
+
+# meters, example: 5 cm marker
+MARKER_LENGTH = 0.05
