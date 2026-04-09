@@ -9,8 +9,9 @@ STATE_MAP = {
     99: "FAIL_SAFE"
 }
 
-ARUCO_DICT_NAME = "DICT_4X4_50"
 CAMERA_INDEX = 0
+MARKER_LENGTH = 0.05  # 5 cm
 
-# meters, example: 5 cm marker
-MARKER_LENGTH = 0.05
+CALIBRATION_DIR = "calibration"
+CAMERA_MATRIX_FILE = "calibration/camera_matrix.npy"
+DIST_COEFFS_FILE = "calibration/dist_coeffs.npy"
