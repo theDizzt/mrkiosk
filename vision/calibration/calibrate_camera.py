@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 
 # 체스보드 내부 코너 개수
-CHESSBOARD_SIZE = (9, 6)
+CHESSBOARD_SIZE = (8, 5)
 
 # 한 칸의 실제 크기 (예: 0.025m = 2.5cm)
 SQUARE_SIZE = 0.025
