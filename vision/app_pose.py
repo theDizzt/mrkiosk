@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 from pathlib import Path
+import json
+from datetime import datetime
 
 from config import (
     CAMERA_INDEX,
@@ -9,6 +11,21 @@ from config import (
     DIST_COEFFS_FILE,
 )
 from marker_fsm import MarkerFSM
+
+
+def log_event(state, marker_id, tvec=None):
+    log = {
+        "timestamp": datetime.now().isoformat(),
+        "state": state,
+        "marker_id": marker_id,
+        "event": "state_enter"
+    }
+
+    if tvec is not None:
+        log["tvec"] = tvec.flatten().tolist()
+
+    with open("log.json", "a", encoding="utf-8") as f:
+        f.write(json.dumps(log) + "\n")
 
 
 def load_calibration():
@@ -156,6 +173,12 @@ def main():
                     print(f"Marker ID: {marker_id}")
                     print(f"New State: {fsm.get_current_state()}")
                     print(f"Payload: {payload}")
+
+                    log_event(
+                        state=fsm.get_current_state(),
+                        marker_id=marker_id,
+                        tvec=tvec
+                    )
 
                 # estimate pose
                 rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
