@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-04-12T16:25:17.279638",
+  "state": "OPTION_GUIDE",
+  "marker_id": 20,
+  "rvec": [
+    3.4259957925630964,
+    0.45742420181515775,
+    -0.3513555964482857
+  ],
+  "tvec": [
+    -0.47117753789232053,
+    -0.1496039246661171,
+    1.6617087361387395
+  ],
+  "payload": {
+    "screen": "option",
+    "target_button": "ice_option",
+    "position": {
+      "x": 1420,
+      "y": 640
+    },
+    "message": "Guide user to ice option"
+  }
+}

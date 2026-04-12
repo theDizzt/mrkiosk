@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 from pathlib import Path
-import json
-from datetime import datetime
+import json # 로그/연동용 JSON 저장을 위해 추가
+from datetime import datetime # 타임스탬프 기록용 추가
 
 from config import (
     CAMERA_INDEX,
@@ -64,6 +64,49 @@ def create_detector():
     return detector
 
 
+# 상태 변경 이력을 누적 저장하는 함수 추가
+def append_log_event(state, marker_id, rvec=None, tvec=None, payload=None):
+    log = {
+        "timestamp": datetime.now().isoformat(),
+        "state": state,
+        "marker_id": marker_id,
+        "event": "state_enter"
+    }
+
+    if rvec is not None:
+        log["rvec"] = rvec.flatten().tolist()
+
+    if tvec is not None:
+        log["tvec"] = tvec.flatten().tolist()
+
+    if payload is not None:
+        log["payload"] = payload
+
+    with open("log.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(log, ensure_ascii=False) + "\n")
+
+
+# Unity가 읽기 쉬운 최신 상태 파일 저장 함수 추가
+def write_runtime_state(state, marker_id, rvec=None, tvec=None, payload=None):
+    runtime_data = {
+        "timestamp": datetime.now().isoformat(),
+        "state": state,
+        "marker_id": marker_id
+    }
+
+    if rvec is not None:
+        runtime_data["rvec"] = rvec.flatten().tolist()
+
+    if tvec is not None:
+        runtime_data["tvec"] = tvec.flatten().tolist()
+
+    if payload is not None:
+        runtime_data["payload"] = payload
+
+    with open("runtime_state.json", "w", encoding="utf-8") as f:
+        json.dump(runtime_data, f, ensure_ascii=False, indent=2)
+
+
 def draw_state_info(frame, state_name, payload, pose_text=None):
     y = 30
 
@@ -112,6 +155,20 @@ def draw_state_info(frame, state_name, payload, pose_text=None):
             cv2.FONT_HERSHEY_SIMPLEX,
             0.6,
             (0, 200, 255),
+            2
+        )
+
+    # offset_from_marker 표시 추가
+    offset = payload.get("offset_from_marker")
+    if offset:
+        y += 35
+        cv2.putText(
+            frame,
+            f"Offset: ({offset['x']:.3f}, {offset['y']:.3f}, {offset['z']:.3f})",
+            (20, y),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.55,
+            (200, 255, 200),
             2
         )
 
@@ -166,6 +223,17 @@ def main():
             for i, marker_id in enumerate(ids.flatten()):
                 marker_id = int(marker_id)
 
+                # estimate pose
+                rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
+                    [corners[i]],
+                    MARKER_LENGTH,
+                    camera_matrix,
+                    dist_coeffs
+                )
+
+                rvec = rvecs[0]
+                tvec = tvecs[0]
+
                 changed = fsm.update_by_marker_id(marker_id)
                 if changed:
                     payload = fsm.get_state_payload()
@@ -180,16 +248,23 @@ def main():
                         tvec=tvec
                     )
 
-                # estimate pose
-                rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
-                    [corners[i]],
-                    MARKER_LENGTH,
-                    camera_matrix,
-                    dist_coeffs
-                )
+                    # 상태 변경 이력 누적 저장
+                    append_log_event(
+                        state=fsm.get_current_state(),
+                        marker_id=marker_id,
+                        rvec=rvec,
+                        tvec=tvec,
+                        payload=payload
+                    )
 
-                rvec = rvecs[0]
-                tvec = tvecs[0]
+                    # Unity 연동용 최신 상태 저장
+                    write_runtime_state(
+                        state=fsm.get_current_state(),
+                        marker_id=marker_id,
+                        rvec=rvec,
+                        tvec=tvec,
+                        payload=payload
+                    )
 
                 cv2.drawFrameAxes(
                     frame,
