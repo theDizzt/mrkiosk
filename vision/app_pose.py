@@ -224,6 +224,7 @@ def main():
                 marker_id = int(marker_id)
 
                 # estimate pose
+                # 포즈 계산을 먼저 수행
                 rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
                     [corners[i]],
                     MARKER_LENGTH,
@@ -234,7 +235,24 @@ def main():
                 rvec = rvecs[0]
                 tvec = tvecs[0]
 
+                cv2.drawFrameAxes(
+                    frame,
+                    camera_matrix,
+                    dist_coeffs,
+                    rvec,
+                    tvec,
+                    0.03
+                )
+
+                pose_text = format_pose_text(tvec)
+
+                print(f"Marker {marker_id} pose:")
+                print(f"  rvec: {rvec.flatten()}")
+                print(f"  tvec: {tvec.flatten()}")
+
+                # 포즈 계산 후에 상태 변경
                 changed = fsm.update_by_marker_id(marker_id)
+
                 if changed:
                     payload = fsm.get_state_payload()
                     print("=" * 60)
@@ -242,13 +260,17 @@ def main():
                     print(f"New State: {fsm.get_current_state()}")
                     print(f"Payload: {payload}")
 
+                    """
+                    # append_log_event()와 역할이 겹쳐 삭제
                     log_event(
                         state=fsm.get_current_state(),
                         marker_id=marker_id,
                         tvec=tvec
                     )
+                    """
 
                     # 상태 변경 이력 누적 저장
+                    # tvec, rvec를 안전하게 로그에 저장 가능함
                     append_log_event(
                         state=fsm.get_current_state(),
                         marker_id=marker_id,
@@ -265,15 +287,6 @@ def main():
                         tvec=tvec,
                         payload=payload
                     )
-
-                cv2.drawFrameAxes(
-                    frame,
-                    camera_matrix,
-                    dist_coeffs,
-                    rvec,
-                    tvec,
-                    0.03
-                )
 
                 pose_text = format_pose_text(tvec)
 
