@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-04-12T16:25:17.279638",
-  "state": "OPTION_GUIDE",
-  "marker_id": 20,
+  "timestamp": "2026-04-14T22:41:41.351969",
+  "state": "MENU_GUIDE",
+  "marker_id": 10,
   "rvec": [
-    3.4259957925630964,
-    0.45742420181515775,
-    -0.3513555964482857
+    3.084564177051954,
+    -0.2788497192976876,
+    0.4728391048367832
   ],
   "tvec": [
-    -0.47117753789232053,
-    -0.1496039246661171,
-    1.6617087361387395
+    -0.05738270330352085,
+    -0.35720031415400655,
+    1.4598564169074812
   ],
   "payload": {
-    "screen": "option",
-    "target_button": "ice_option",
+    "screen": "menu",
+    "target_button": "americano",
     "position": {
-      "x": 1420,
-      "y": 640
+      "x": 1240,
+      "y": 530
     },
-    "message": "Guide user to ice option"
+    "message": "Guide user to Americano menu"
   }
 }
