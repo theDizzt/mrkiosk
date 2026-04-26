@@ -3,6 +3,8 @@ import numpy as np
 from pathlib import Path
 import json # 로그/연동용 JSON 저장을 위해 추가
 from datetime import datetime # 타임스탬프 기록용 추가
+from collections import deque, Counter
+from config import STATE_MAP
 
 from config import (
     CAMERA_INDEX,
@@ -13,19 +15,25 @@ from config import (
 from marker_fsm import MarkerFSM
 
 
-def log_event(state, marker_id, tvec=None):
-    log = {
-        "timestamp": datetime.now().isoformat(),
-        "state": state,
-        "marker_id": marker_id,
-        "event": "state_enter"
-    }
+class StableStateDecoder:
+    def __init__(self, window_size=7, min_count=4):
+        self.history = deque(maxlen=window_size)
+        self.min_count = min_count
 
-    if tvec is not None:
-        log["tvec"] = tvec.flatten().tolist()
+    def update(self, state_id):
+        # STATE_MAP에 없는 ID는 무시
+        if state_id not in STATE_MAP:
+            return None
 
-    with open("log.json", "a", encoding="utf-8") as f:
-        f.write(json.dumps(log) + "\n")
+        self.history.append(state_id)
+
+        counter = Counter(self.history)
+        most_common_id, count = counter.most_common(1)[0]
+
+        if count >= self.min_count:
+            return most_common_id
+
+        return None
 
 
 def load_calibration():
@@ -57,11 +65,185 @@ def create_fallback_calibration(frame_width, frame_height):
     return camera_matrix, dist_coeffs
 
 
-def create_detector():
+# ArUco Pose 감지
+def create_aruco_detector():
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
     parameters = cv2.aruco.DetectorParameters()
-    detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
-    return detector
+    return cv2.aruco.ArucoDetector(aruco_dict, parameters)
+
+
+# contour approx points를 좌상, 우상, 우하, 좌하 순서로 정렬
+def order_corners(points):
+    pts = points.reshape(4, 2).astype(np.float32)
+
+    s = pts.sum(axis=1)
+    diff = np.diff(pts, axis=1)
+
+    ordered = np.zeros((4, 2), dtype=np.float32)
+    ordered[0] = pts[np.argmin(s)]       # top-left
+    ordered[2] = pts[np.argmax(s)]       # bottom-right
+    ordered[1] = pts[np.argmin(diff)]    # top-right
+    ordered[3] = pts[np.argmax(diff)]    # bottom-left
+
+    return ordered
+
+
+# 2x5 비트 마커 디코딩
+def decode_2x5_marker(gray, corners):
+    # corners: (4,2) 형태 (marker 영역)
+    # return: int marker_id (0~1023) or None
+
+    # perspective transform → 정사각형 정렬
+    size = 200
+
+    src_pts = order_corners(corners)
+    dst_pts = np.array([
+        [0, 0],
+        [size, 0],
+        [size, size],
+        [0, size]
+    ], dtype=np.float32)
+
+    matrix = cv2.getPerspectiveTransform(src_pts, dst_pts)
+    warped = cv2.warpPerspective(gray, matrix, (size, size))
+
+    warped = cv2.GaussianBlur(warped, (3, 3), 0)
+    _, binary = cv2.threshold(
+        warped,
+        100,
+        255,
+        cv2.THRESH_BINARY
+    )
+
+    rows, cols = 2, 5
+    cell_h = size // rows
+    cell_w = size // cols
+
+    bits = []
+
+    for r in range(rows):
+        for c in range(cols):
+            y1 = r * cell_h
+            y2 = (r + 1) * cell_h
+            x1 = c * cell_w
+            x2 = (c + 1) * cell_w
+
+            margin_y = int(cell_h * 0.1)
+            margin_x = int(cell_w * 0.1)
+
+            cell = binary[
+                y1 + margin_y:y2 - margin_y,
+                x1 + margin_x:x2 - margin_x
+            ]
+
+            mean_val = np.mean(cell)
+
+            # 검정이면 1, 흰색이면 0
+            bit = 1 if mean_val < 128 else 0
+            bits.append(bit)
+
+    # bit → int
+    marker_id = 0
+    for bit in bits:
+        marker_id = (marker_id << 1) | bit
+
+    return marker_id, bits
+
+
+
+def get_bbox_from_points(points):
+    pts = points.reshape(-1, 2)
+    x, y, w, h = cv2.boundingRect(pts.astype(np.int32))
+    return x, y, w, h
+
+
+def bbox_intersection_ratio(box_a, box_b):
+    ax, ay, aw, ah = box_a
+    bx, by, bw, bh = box_b
+
+    ax2, ay2 = ax + aw, ay + ah
+    bx2, by2 = bx + bw, by + bh
+
+    ix1 = max(ax, bx)
+    iy1 = max(ay, by)
+    ix2 = min(ax2, bx2)
+    iy2 = min(ay2, by2)
+
+    iw = max(0, ix2 - ix1)
+    ih = max(0, iy2 - iy1)
+
+    inter_area = iw * ih
+    area_a = aw * ah
+
+    if area_a <= 0:
+        return 0.0
+
+    return inter_area / float(area_a)
+
+
+def detect_state_markers(gray, aruco_corners=None):
+    # 2x5 상태 마커 전체 영역을 찾는다.
+    # ArUco 마커와 겹치는 후보는 제외한다.
+
+    aruco_boxes = []
+    if aruco_corners is not None:
+        for c in aruco_corners:
+            aruco_boxes.append(get_bbox_from_points(c))
+
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+    _, binary = cv2.threshold(
+        blurred,
+        0,
+        255,
+        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
+    )
+
+    # 작은 칸들이 하나의 2x5 블록으로 붙도록 팽창
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
+    merged = cv2.dilate(binary, kernel, iterations=2)
+
+    contours, _ = cv2.findContours(
+        merged,
+        cv2.RETR_EXTERNAL,
+        cv2.CHAIN_APPROX_SIMPLE
+    )
+
+    state_markers = []
+
+    for contour in contours:
+        area = cv2.contourArea(contour)
+
+        if area < 2000:
+            continue
+
+        rect = cv2.minAreaRect(contour)
+        box = cv2.boxPoints(rect).astype(np.int32)
+
+        x, y, w, h = cv2.boundingRect(box)
+        if h == 0:
+            continue
+
+        aspect_ratio = w / float(h)
+
+        if not (1.8 <= aspect_ratio <= 3.5):
+            continue
+
+        candidate_box = (x, y, w, h)
+
+        # ArUco와 겹치면 상태 마커 후보에서 제외
+        overlapped_with_aruco = False
+        for aruco_box in aruco_boxes:
+            if bbox_intersection_ratio(candidate_box, aruco_box) > 0.2:
+                overlapped_with_aruco = True
+                break
+
+        if overlapped_with_aruco:
+            continue
+
+        state_markers.append(box)
+
+    return state_markers
 
 
 # 상태 변경 이력을 누적 저장하는 함수 추가
@@ -86,6 +268,46 @@ def append_log_event(state, marker_id, rvec=None, tvec=None, payload=None):
         f.write(json.dumps(log, ensure_ascii=False) + "\n")
 
 
+# 죄표 변환
+def local_to_camera_world(rvec, tvec, local_position):
+    # 문서 구조 기준:
+    # P_camera = R * P_local + t
+
+    # rvec, tvec: ArUco 6DoF pose
+    # local_position: 마커 기준 로컬 좌표
+
+    R, _ = cv2.Rodrigues(rvec)
+
+    p_local = np.array([
+        [float(local_position.get("x", 0.0))],
+        [float(local_position.get("y", 0.0))],
+        [float(local_position.get("z", 0.0))]
+    ], dtype=np.float32)
+
+    p_world = R @ p_local + tvec.reshape(3, 1)
+
+    return {
+        "x": float(p_world[0][0]),
+        "y": float(p_world[1][0]),
+        "z": float(p_world[2][0])
+    }
+
+
+def log_event(state, marker_id, tvec=None):
+    log = {
+        "timestamp": datetime.now().isoformat(),
+        "state": state,
+        "marker_id": marker_id,
+        "event": "state_enter"
+    }
+
+    if tvec is not None:
+        log["tvec"] = tvec.flatten().tolist()
+
+    with open("log.json", "a", encoding="utf-8") as f:
+        f.write(json.dumps(log) + "\n")
+
+
 # Unity가 읽기 쉬운 최신 상태 파일 저장 함수 추가
 def write_runtime_state(state, marker_id, rvec=None, tvec=None, payload=None):
     runtime_data = {
@@ -107,7 +329,13 @@ def write_runtime_state(state, marker_id, rvec=None, tvec=None, payload=None):
         json.dump(runtime_data, f, ensure_ascii=False, indent=2)
 
 
-def draw_state_info(frame, state_name, payload, pose_text=None):
+# Drawing
+def format_pose_text(tvec):
+    x, y, z = tvec.flatten()
+    return f"Pose tvec(m): x={x:.3f}, y={y:.3f}, z={z:.3f}"
+
+
+def draw_state_info(frame, state_name, payload, pose_text=None, state_marker_id=None):
     y = 30
 
     cv2.putText(
@@ -119,6 +347,18 @@ def draw_state_info(frame, state_name, payload, pose_text=None):
         (0, 255, 0),
         2
     )
+
+    if state_marker_id is not None:
+        y += 35
+        cv2.putText(
+            frame,
+            f"State Marker ID: {state_marker_id}",
+            (20, y),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, 255, 0),
+            2
+        )
 
     y += 35
     message = payload.get("message", "")
@@ -145,30 +385,29 @@ def draw_state_info(frame, state_name, payload, pose_text=None):
             2
         )
 
-    position = payload.get("position")
-    if position:
+    local_position = payload.get("local_position")
+    if local_position:
         y += 35
         cv2.putText(
             frame,
-            f"UI Position: ({position['x']}, {position['y']})",
-            (20, y),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.6,
-            (0, 200, 255),
-            2
-        )
-
-    # offset_from_marker 표시 추가
-    offset = payload.get("offset_from_marker")
-    if offset:
-        y += 35
-        cv2.putText(
-            frame,
-            f"Offset: ({offset['x']:.3f}, {offset['y']:.3f}, {offset['z']:.3f})",
+            f"Local: ({local_position['x']:.3f}, {local_position['y']:.3f}, {local_position['z']:.3f})",
             (20, y),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.55,
             (200, 255, 200),
+            2
+        )
+
+    world_position = payload.get("world_position")
+    if world_position:
+        y += 35
+        cv2.putText(
+            frame,
+            f"World: ({world_position['x']:.3f}, {world_position['y']:.3f}, {world_position['z']:.3f})",
+            (20, y),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.55,
+            (0, 200, 255),
             2
         )
 
@@ -185,26 +424,28 @@ def draw_state_info(frame, state_name, payload, pose_text=None):
         )
 
 
-def format_pose_text(tvec):
-    x, y, z = tvec.flatten()
-    return f"Pose tvec(m): x={x:.3f}, y={y:.3f}, z={z:.3f}"
-
-
 def main():
     cap = cv2.VideoCapture(CAMERA_INDEX)
+
     if not cap.isOpened():
         print("Failed to open camera.")
         return
 
-    detector = create_detector()
+    aruco_detector = create_aruco_detector()
     fsm = MarkerFSM("states.json")
 
     camera_matrix, dist_coeffs = load_calibration()
 
     print("Press ESC to quit.")
+    print("ArUco: pose estimation only")
+    print("2x5 marker: state ID only")
+
+    last_state_marker_id = None
+    stable_decoder = StableStateDecoder(window_size=7, min_count=4)
 
     while True:
         ret, frame = cap.read()
+
         if not ret:
             print("Failed to read frame.")
             break
@@ -212,95 +453,154 @@ def main():
         frame_height, frame_width = frame.shape[:2]
 
         if camera_matrix is None or dist_coeffs is None:
-            camera_matrix, dist_coeffs = create_fallback_calibration(frame_width, frame_height)
+            camera_matrix, dist_coeffs = create_fallback_calibration(
+                frame_width,
+                frame_height
+            )
 
-        corners, ids, _ = detector.detectMarkers(frame)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
         pose_text = None
+        rvec = None
+        tvec = None
 
-        if ids is not None:
-            cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+        # ArUco로 6DoF 포즈 추정
+        aruco_corners, aruco_ids, _ = aruco_detector.detectMarkers(frame)
 
-            for i, marker_id in enumerate(ids.flatten()):
-                marker_id = int(marker_id)
+        if aruco_ids is not None:
+            cv2.aruco.drawDetectedMarkers(frame, aruco_corners, aruco_ids)
 
-                # estimate pose
-                # 포즈 계산을 먼저 수행
-                rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
-                    [corners[i]],
-                    MARKER_LENGTH,
-                    camera_matrix,
-                    dist_coeffs
-                )
+            # 첫 번째 ArUco를 기준 pose로 사용
+            rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
+                [aruco_corners[0]],
+                MARKER_LENGTH,
+                camera_matrix,
+                dist_coeffs
+            )
 
-                rvec = rvecs[0]
-                tvec = tvecs[0]
+            rvec = rvecs[0]
+            tvec = tvecs[0]
 
-                cv2.drawFrameAxes(
+            cv2.drawFrameAxes(
+                frame,
+                camera_matrix,
+                dist_coeffs,
+                rvec,
+                tvec,
+                0.015
+            )
+
+            pose_text = format_pose_text(tvec)
+
+        # 2x5 정사각형 마커로 상태 ID 인식
+        detected_state_id = None
+        aruco_corners, aruco_ids, _ = aruco_detector.detectMarkers(frame)
+        state_markers = detect_state_markers(gray, aruco_corners)
+
+        for marker in state_markers:
+            state_id, bits = decode_2x5_marker(gray, marker)
+            stable_state_id = stable_decoder.update(state_id)
+
+            if stable_state_id is not None:
+                detected_state_id = stable_state_id
+            else:
+                detected_state_id = None
+
+            cv2.polylines(frame, [marker], True, (0, 255, 0), 2)
+
+            x, y = marker[0]
+            cv2.putText(
+                frame,
+                f"State ID: {state_id}",
+                (int(x), int(y) - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (0, 255, 0),
+                2
+            )
+
+            cv2.putText(
+                frame,
+                f"Bits: {''.join(map(str, bits))}",
+                (int(x), int(y) + 20),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (0, 255, 255),
+                2
+            )
+
+            # 첫 번째 상태 마커 사용
+            break
+
+        # 상태 ID와 ArUco pose가 둘 다 있을 때만 FSM + runtime JSON 갱신
+        if detected_state_id is not None:
+            last_state_marker_id = detected_state_id
+
+            if rvec is None or tvec is None:
+                cv2.putText(
                     frame,
-                    camera_matrix,
-                    dist_coeffs,
-                    rvec,
-                    tvec,
-                    0.03
+                    "State marker detected, but ArUco pose not found",
+                    (20, frame_height - 30),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6,
+                    (0, 0, 255),
+                    2
                 )
-
-                pose_text = format_pose_text(tvec)
-
-                print(f"Marker {marker_id} pose:")
-                print(f"  rvec: {rvec.flatten()}")
-                print(f"  tvec: {tvec.flatten()}")
-
-                # 포즈 계산 후에 상태 변경
-                changed = fsm.update_by_marker_id(marker_id)
+            else:
+                changed = fsm.update_by_marker_id(detected_state_id)
 
                 if changed:
-                    payload = fsm.get_state_payload()
+                    payload = dict(fsm.get_state_payload())
+
+                    local_position = payload.get(
+                        "local_position",
+                        {"x": 0.0, "y": 0.0, "z": 0.0}
+                    )
+
+                    world_position = local_to_camera_world(
+                        rvec,
+                        tvec,
+                        local_position
+                    )
+
+                    payload["world_position"] = world_position
+
                     print("=" * 60)
-                    print(f"Marker ID: {marker_id}")
+                    print(f"State Marker ID: {detected_state_id}")
                     print(f"New State: {fsm.get_current_state()}")
                     print(f"Payload: {payload}")
 
-                    """
-                    # append_log_event()와 역할이 겹쳐 삭제
-                    log_event(
-                        state=fsm.get_current_state(),
-                        marker_id=marker_id,
-                        tvec=tvec
-                    )
-                    """
-
-                    # 상태 변경 이력 누적 저장
-                    # tvec, rvec를 안전하게 로그에 저장 가능함
                     append_log_event(
                         state=fsm.get_current_state(),
-                        marker_id=marker_id,
+                        marker_id=detected_state_id,
                         rvec=rvec,
                         tvec=tvec,
                         payload=payload
                     )
 
-                    # Unity 연동용 최신 상태 저장
                     write_runtime_state(
                         state=fsm.get_current_state(),
-                        marker_id=marker_id,
+                        marker_id=detected_state_id,
                         rvec=rvec,
                         tvec=tvec,
                         payload=payload
                     )
-
-                pose_text = format_pose_text(tvec)
-
-                print(f"Marker {marker_id} pose:")
-                print(f"  rvec: {rvec.flatten()}")
-                print(f"  tvec: {tvec.flatten()}")
 
         current_state = fsm.get_current_state()
         payload = fsm.get_state_payload()
-        draw_state_info(frame, current_state, payload, pose_text)
 
-        cv2.imshow("MR Kiosk Prototype - Pose Estimation", frame)
+        draw_state_info(
+            frame,
+            current_state,
+            payload,
+            pose_text,
+            last_state_marker_id
+        )
+
+        cv2.imshow("MR Kiosk Prototype - ArUco Pose + 2x5 State Marker", frame)
 
         key = cv2.waitKey(1) & 0xFF
+
         if key == 27:
             break
 
