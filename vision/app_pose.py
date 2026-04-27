@@ -11,7 +11,9 @@ from config import (
     MARKER_LENGTH,
     CAMERA_MATRIX_FILE,
     DIST_COEFFS_FILE,
+    REFERENCE_ARUCO_ID,
 )
+
 from marker_fsm import MarkerFSM
 
 
@@ -246,6 +248,26 @@ def detect_state_markers(gray, aruco_corners=None):
     return state_markers
 
 
+class PositionFilter:
+    def __init__(self, alpha=0.35):
+        self.prev = None
+        self.alpha = alpha
+
+    def update(self, pos):
+        if self.prev is None:
+            self.prev = pos
+            return pos
+
+        smoothed = {
+            "x": self.alpha * pos["x"] + (1 - self.alpha) * self.prev["x"],
+            "y": self.alpha * pos["y"] + (1 - self.alpha) * self.prev["y"],
+            "z": self.alpha * pos["z"] + (1 - self.alpha) * self.prev["z"],
+        }
+
+        self.prev = smoothed
+        return smoothed
+
+
 # 상태 변경 이력을 누적 저장하는 함수 추가
 def append_log_event(state, marker_id, rvec=None, tvec=None, payload=None):
     log = {
@@ -441,6 +463,10 @@ def main():
     print("2x5 marker: state ID only")
 
     last_state_marker_id = None
+
+    # world_position 흔들림 완화용 EMA 필터
+    position_filter = PositionFilter(alpha=0.35)
+
     stable_decoder = StableStateDecoder(window_size=7, min_count=4)
 
     while True:
@@ -470,27 +496,48 @@ def main():
         if aruco_ids is not None:
             cv2.aruco.drawDetectedMarkers(frame, aruco_corners, aruco_ids)
 
-            # 첫 번째 ArUco를 기준 pose로 사용
-            rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
-                [aruco_corners[0]],
-                MARKER_LENGTH,
-                camera_matrix,
-                dist_coeffs
-            )
+            reference_index = None
 
-            rvec = rvecs[0]
-            tvec = tvecs[0]
+            # 기준 ArUco ID 찾기
+            for i, aruco_id in enumerate(aruco_ids.flatten()):
+                if int(aruco_id) == REFERENCE_ARUCO_ID:
+                    reference_index = i
+                    break
 
-            cv2.drawFrameAxes(
-                frame,
-                camera_matrix,
-                dist_coeffs,
-                rvec,
-                tvec,
-                0.015
-            )
+            # 기준 마커가 있을 때만 pose 계산
+            if reference_index is not None:
+                rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
+                    [aruco_corners[reference_index]],
+                    MARKER_LENGTH,
+                    camera_matrix,
+                    dist_coeffs
+                )
 
-            pose_text = format_pose_text(tvec)
+                rvec = rvecs[0]
+                tvec = tvecs[0]
+
+                cv2.drawFrameAxes(
+                    frame,
+                    camera_matrix,
+                    dist_coeffs,
+                    rvec,
+                    tvec,
+                    0.015
+                )
+
+                pose_text = format_pose_text(tvec)
+
+            else:
+                # 기준 마커 없을 때 안내 메시지
+                cv2.putText(
+                    frame,
+                    f"Reference ArUco ID {REFERENCE_ARUCO_ID} not found",
+                    (20, frame_height - 60),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6,
+                    (0, 0, 255),
+                    2
+                )
 
         # 2x5 정사각형 마커로 상태 ID 인식
         detected_state_id = None
@@ -562,6 +609,9 @@ def main():
                         tvec,
                         local_position
                     )
+
+                    # 좌표 스무딩 적용
+                    world_position = position_filter.update(world_position)
 
                     payload["world_position"] = world_position
 
