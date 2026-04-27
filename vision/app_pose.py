@@ -184,8 +184,8 @@ def bbox_intersection_ratio(box_a, box_b):
 
 
 def detect_state_markers(gray, aruco_corners=None):
-    # 2x5 상태 마커 전체 영역을 찾는다.
-    # ArUco 마커와 겹치는 후보는 제외한다.
+    # 2x5 상태 마커 전체 영역을 찾음
+    # ArUco 마커와 겹치는 후보는 제외
 
     aruco_boxes = []
     if aruco_corners is not None:
@@ -201,7 +201,7 @@ def detect_state_markers(gray, aruco_corners=None):
         cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
     )
 
-    # 작은 칸들이 하나의 2x5 블록으로 붙도록 팽창
+    # 작은 칸들이 하나의 2x5 블록으로 붙도록 함
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
     merged = cv2.dilate(binary, kernel, iterations=2)
 
@@ -249,14 +249,44 @@ def detect_state_markers(gray, aruco_corners=None):
 
 
 class PositionFilter:
-    def __init__(self, alpha=0.35):
+    def __init__(self, alpha=0.35, threshold=0.08, max_hold=5):
         self.prev = None
         self.alpha = alpha
+        self.threshold = threshold  # 튐 기준 (미터)
+        self.outlier_count = 0
+        self.max_hold = max_hold  # 계속 튀면 허용
+
+    def distance(self, a, b):
+        return ((a["x"] - b["x"])**2 +
+                (a["y"] - b["y"])**2 +
+                (a["z"] - b["z"])**2) ** 0.5
 
     def update(self, pos):
+        # 첫 프레임
         if self.prev is None:
             self.prev = pos
             return pos
+
+        dist = self.distance(self.prev, pos)
+
+        # 이상치 감지
+        if dist > self.threshold:
+            self.outlier_count += 1
+
+            print(f"[OUTLIER] jump={dist:.3f}m count={self.outlier_count}")
+
+            # 일정 횟수까진 무시
+            if self.outlier_count < self.max_hold:
+                return self.prev
+
+            # 환경 변화
+            print("[OUTLIER] accepted due to persistence")
+            self.outlier_count = 0
+            self.prev = pos
+            return pos
+
+        # 정상 값 → EMA 적용
+        self.outlier_count = 0
 
         smoothed = {
             "x": self.alpha * pos["x"] + (1 - self.alpha) * self.prev["x"],
@@ -465,7 +495,11 @@ def main():
     last_state_marker_id = None
 
     # world_position 흔들림 완화용 EMA 필터
-    position_filter = PositionFilter(alpha=0.35)
+    position_filter = PositionFilter(
+        alpha=0.35,
+        threshold=0.08,   # 튐 기준 (8 cm)
+        max_hold=5        # 몇 번까지 무시
+    )
 
     stable_decoder = StableStateDecoder(window_size=7, min_count=4)
 
