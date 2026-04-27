@@ -1,12 +1,28 @@
 STATE_MAP = {
+    # 000~099: System
     0: "IDLE",
     1: "LISTENING",
-    10: "MENU_GUIDE",
-    20: "OPTION_GUIDE",
-    30: "PAYMENT_GUIDE",
-    40: "CONFIRM",
-    90: "ERROR_RECOVERY",
-    99: "FAIL_SAFE"
+
+    # 100~199: Category
+    100: "CATEGORY_SELECT",
+
+    # 200~399: Item
+    200: "ITEM_SELECT",
+
+    # 400~499: Option
+    400: "OPTION_SELECT",
+
+    # 600~699: Payment
+    600: "PAYMENT_SELECT",
+
+    # 700~799: Complete
+    700: "CONFIRM",
+
+    # 800~899: Recovery
+    800: "ERROR_RECOVERY",
+
+    # 900~1023: Exception
+    900: "FAIL_SAFE"
 }
 
 CAMERA_INDEX = 0
