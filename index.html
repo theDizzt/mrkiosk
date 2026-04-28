@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ERICA COFFEE</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <div class="device-frame">
+      <header class="topbar">
+        <div class="brand">ERICA COFFEE</div>
+      </header>
+
+      <!-- 첫 화면 -->
+      <section id="screen-home" class="screen active">
+        <div class="home-content">
+          <h1>어서 오세요</h1>
+          <p>주문 방식을 선택해 주세요</p>
+          <div class="home-buttons">
+            <button class="primary large" onclick="selectDineType('매장')">매장에서 먹고 갈게요</button>
+            <button class="secondary large" onclick="selectDineType('포장')">포장해서 갈게요</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 메뉴 화면 -->
+      <section id="screen-menu" class="screen">
+        <div class="kiosk-layout">
+
+          <main class="menu-area">
+            <div class="category-bar">
+              <button class="category active" data-category="Coffee">Coffee</button>
+              <button class="category" data-category="Tea">Tea</button>
+              <button class="category" data-category="Ade/Juice">Ade / Juice</button>
+              <button class="category" data-category="Beverage">Beverage</button>
+              <button class="category" data-category="Blended">Blended</button>
+            </div>
+
+            <div id="menu-grid" class="menu-grid"></div>
+          </main>
+
+          <aside class="order-panel">
+            <div class="order-header">
+              <h2>주문 확인</h2>
+              <p>담은 메뉴와 옵션을 확인해 주세요</p>
+            </div>
+
+            <div id="cart-list" class="cart-list">
+            <div class="cart-empty">담은 메뉴가 없습니다.</div>
+            </div>
+
+            <div class="order-bottom">
+              <div class="order-total-row">
+                <span>주문한 메뉴</span>
+                <strong id="order-count">0개</strong>
+              </div>
+
+              <div class="order-total-row total">
+                <span>총 금액</span>
+                <strong id="total-price">0원</strong>
+              </div>
+
+              <button id="pay-button" class="checkout-button" onclick="goToReceipt()" disabled>
+                결제하기
+              </button>
+            </div>
+          </aside>
+
+      </div>
+    </section>
+
+      <!-- 주문 확인 화면 -->
+      <section id="screen-receipt" class="screen">
+        <div class="receipt-screen">
+          <h2>주문 내용을 확인해 주세요</h2>
+
+          <div class="receipt-card">
+            <div class="receipt-summary">
+              <div>
+                <span class="summary-label">주문 방식</span>
+                <strong id="receipt-dine-type">매장</strong>
+              </div>
+              <div class="summary-right">
+                <span class="summary-label">총 결제 금액</span>
+                <strong id="receipt-total-price">0원</strong>
+              </div>
+            </div>
+
+            <div id="receipt-items" class="receipt-items"></div>
+          </div>
+
+          <div class="receipt-buttons">
+            <button class="secondary" onclick="showScreen('screen-menu')">돌아가기</button>
+            <button class="primary" onclick="showScreen('screen-payment')">결제하기</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 결제 방식 선택 화면 -->
+      <section id="screen-payment" class="screen">
+        <div class="payment-content">
+          <div class="sub-label center">결제 방식 선택</div>
+          <h2>결제 수단을 선택해 주세요</h2>
+
+          <div class="payment-buttons">
+            <button class="secondary large" onclick="completePayment('카드')">카드</button>
+            <button class="secondary large" onclick="completePayment('간편페이')">간편페이</button>
+            <button class="secondary large" onclick="completePayment('기프티콘/쿠폰')">기프티콘/쿠폰</button>
+          </div>
+
+          <button class="text-button" onclick="showScreen('screen-receipt')">돌아가기</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 옵션 모달 -->
+  <div id="option-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h3 id="modal-menu-name">음료명</h3>
+          <p>옵션을 선택해 주세요</p>
+        </div>
+        <button class="close-button" onclick="closeModal()">×</button>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">온도</div>
+        <div class="option-buttons" id="temp-options"></div>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">당도</div>
+        <div class="option-buttons" id="sweet-options"></div>
+      </div>
+
+      <div id="ice-group" class="option-group">
+        <div class="option-title">얼음</div>
+        <div class="option-buttons" id="ice-options"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="secondary" onclick="closeModal()">취소</button>
+        <button class="primary" onclick="addToCart()">담기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 -->
+  <div id="toast" class="toast hidden">결제가 완료되었습니다.</div>
+
+  <script src="script.js"></script>
+</body>
+</html>
