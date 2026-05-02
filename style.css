@@ -1,0 +1,552 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+:root {
+  --bg: #f3f3f3;
+  --surface: #fefefe;
+  --line: #d7d7d7;
+  --text: #4f4f4f;
+  --text-dark: #2f2f2f;
+  --text-soft: #7b7b7b;
+  --yellow: #f2db69;
+  --shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Pretendard', sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button {
+  border: none;
+  cursor: pointer;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+.device-frame {
+  width: 1024px;
+  height: 720px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.topbar {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  background: #fefefe;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  height: calc(100% - 72px);
+}
+
+.screen.active {
+  display: block;
+}
+
+/* 첫 화면 */
+.home-content,
+.payment-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f6f6f6;
+  padding: 40px;
+  text-align: center;
+}
+
+.home-content h1,
+.payment-content h2 {
+  margin: 0 0 12px;
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.home-content p {
+  margin: 0 0 32px;
+  font-size: 19px;
+  color: var(--text-soft);
+}
+
+.home-buttons,
+.payment-buttons {
+  width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.primary,
+.secondary {
+  height: 64px;
+  border-radius: 20px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.primary {
+  background: #4c4c4c;
+  color: #fefefe;
+}
+
+.secondary {
+  background: #fefefe;
+  color: var(--text-dark);
+  border: 1px solid #d0d0d0;
+}
+
+.large {
+  height: 84px;
+}
+
+.text-button {
+  margin-top: 20px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 17px;
+}
+
+/* 메뉴 화면 전체 */
+.kiosk-layout {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-rows: 100%;
+  background: #f3f3f3;
+  overflow: hidden;
+}
+
+/* 좌측 메뉴 영역 */
+.menu-area {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 72px minmax(0, 1fr);
+  padding: 18px;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 상단 카테고리 */
+.category-bar {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  height: 56px;
+}
+
+.category {
+  background: #e8e8e8;
+  color: #555;
+  font-size: 17px;
+  font-weight: 700;
+  border-radius: 12px;
+  line-height: 1.15;
+}
+
+.category.active {
+  background: var(--yellow);
+  color: #2f2f2f;
+}
+
+/* 메뉴 6개 고정 그리드 */
+.menu-grid {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  overflow: hidden;
+}
+
+.menu-item-card {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: #fefefe;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 14px;
+  border-radius: 35px;
+  cursor: pointer;
+}
+
+/* 메뉴 이름 */
+.menu-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #555;
+  text-align: center;
+}
+
+/* 메뉴 가격 */
+.menu-price {
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #4d4d4d;
+  text-align: center;
+}
+
+
+/* 메뉴 이미지 */
+.menu-img {
+  width: 100%;
+  height: 80%;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* 우측 주문 확인 영역 */
+.order-panel {
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: #fefefe;
+  border-left: 1px solid var(--line);
+  padding: 22px;
+  display: grid;
+  grid-template-rows: 76px minmax(0, 1fr) 170px;
+  overflow: hidden;
+}
+
+/* 구분선 */
+.order-header {
+  border-bottom: 1px solid #dddddd;
+}
+
+/* 주문 확인 */
+.order-header h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+/* 주문 확인 아래 설명 문장 */
+.order-header p {
+  margin: 6px 0 0;
+  font-size: 16px;
+  color: var(--text-soft);
+}
+
+.cart-list {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+
+.cart-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 15px;
+  text-align: center;
+}
+
+.cart-item {
+  background: #f3f3f3;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.cart-item-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #333;
+}
+
+.cart-item-option {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #777;
+  line-height: 1.6;
+}
+
+.cart-item-bottom {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  font-size: 13px;
+  color: #555;
+}
+
+.cart-item-bottom strong {
+  font-size: 13px;
+  color: #333;
+}
+
+.order-bottom {
+  border-top: 1px solid #dddddd;
+  padding-top: 16px;
+}
+
+.order-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #555;
+  font-weight: 800;
+}
+
+.order-total-row strong {
+  font-size: 18px;
+  color: #333;
+}
+
+.order-total-row.total {
+  margin-bottom: 16px;
+}
+
+.order-total-row.total strong {
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.cart-qty-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.checkout-button {
+  width: 100%;
+  height: 68px;
+  border-radius: 12px;
+  background: #cfcfcf;
+  color: #555;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.checkout-button:not(:disabled) {
+  background: var(--yellow);
+  color: #333;
+}
+
+.checkout-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* 주문 확인 화면 */
+.receipt-screen {
+  padding: 28px;
+  height: 100%;
+  background: #f4f4f4;
+}
+
+.receipt-screen h2 {
+  margin: 0 0 18px;
+  font-size: 34px;
+  color: var(--text-dark);
+}
+
+.receipt-card {
+  background: #fefefe;
+  border-radius: 18px;
+  padding: 22px;
+  height: calc(100% - 120px);
+  overflow-y: auto;
+  border: 1px solid #dedede;
+}
+
+.receipt-summary {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px dashed #cccccc;
+  margin-bottom: 18px;
+}
+
+.summary-label {
+  display: block;
+  color: #8c8c8c;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.summary-right {
+  text-align: right;
+}
+
+.receipt-item {
+  background: #f3f3f3;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.receipt-item-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.receipt-item-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.receipt-item-option {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-top: 4px;
+}
+
+.receipt-item-right {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.receipt-buttons {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* 옵션 모달 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.modal {
+  width: 520px;
+  background: #fefefe;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 36px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.modal-header h3 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  color: var(--text-dark);
+}
+
+.modal-header p {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.close-button {
+  background: transparent;
+  font-size: 32px;
+  color: #888;
+}
+
+.option-group {
+  margin-bottom: 18px;
+}
+
+.option-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: var(--text-dark);
+}
+
+.option-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.option-btn {
+  padding: 14px 10px;
+  background: #f2f2f2;
+  color: #666;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.option-btn.active {
+  background: var(--yellow);
+  color: #4f4f4f;
+}
+
+.modal-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4f4f4f;
+  color: #fefefe;
+  padding: 14px 22px;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 700;
+}
