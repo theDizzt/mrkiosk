@@ -1,0 +1,388 @@
+{
+  "total_events": 133,
+  "state_counter": {
+    "PAYMENT_GUIDE": 27,
+    "OPTION_GUIDE": 6,
+    "MENU_GUIDE": 1,
+    "LISTENING": 44,
+    "IDLE": 54,
+    "ERROR_RECOVERY": 1
+  },
+  "marker_counter": {
+    "30": 27,
+    "20": 6,
+    "10": 1,
+    "1": 44,
+    "0": 54,
+    "100": 1
+  },
+  "event_counter": {
+    "state_enter": 133
+  },
+  "error_recovery_count": 1,
+  "fail_safe_count": 0,
+  "recovery_rate": 0.7518796992481203,
+  "fail_safe_rate": 0.0,
+  "average_state_duration": 10002.302362318189,
+  "most_common_state": {
+    "state": "IDLE",
+    "count": 54
+  },
+  "position_jump_count": 59,
+  "position_jump_details": [
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "OPTION_GUIDE",
+      "distance": 0.45409152375073186,
+      "timestamp": "2026-04-12T16:25:17.279638"
+    },
+    {
+      "from_state": "OPTION_GUIDE",
+      "to_state": "OPTION_GUIDE",
+      "distance": 0.6327664022539281,
+      "timestamp": "2026-04-14T22:41:17.241130"
+    },
+    {
+      "from_state": "OPTION_GUIDE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.18326689769239446,
+      "timestamp": "2026-04-14T22:41:28.279449"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "MENU_GUIDE",
+      "distance": 0.10628000026965018,
+      "timestamp": "2026-04-14T22:41:41.351969"
+    },
+    {
+      "from_state": "MENU_GUIDE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.9497103165578265,
+      "timestamp": "2026-04-26T22:56:43.017063"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "LISTENING",
+      "distance": 0.15580389667453398,
+      "timestamp": "2026-04-26T22:56:50.334956"
+    },
+    {
+      "from_state": "LISTENING",
+      "to_state": "IDLE",
+      "distance": 0.22269504868584206,
+      "timestamp": "2026-04-26T22:56:58.017106"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "LISTENING",
+      "distance": 0.10555889884208988,
+      "timestamp": "2026-04-26T22:56:59.296025"
+    },
+    {
+      "from_state": "LISTENING",
+      "to_state": "IDLE",
+      "distance": 0.25483692355630017,
+      "timestamp": "2026-04-26T22:57:20.648930"
+    },
+    {
+      "from_state": "LISTENING",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.13609178373459774,
+      "timestamp": "2026-04-26T22:57:25.616796"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.1594010713813947,
+      "timestamp": "2026-04-26T22:57:26.007325"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.1350860185464777,
+      "timestamp": "2026-04-26T22:57:26.096339"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "LISTENING",
+      "distance": 0.1121882655192915,
+      "timestamp": "2026-04-26T22:57:28.448669"
+    },
+    {
+      "from_state": "LISTENING",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.13513752810349516,
+      "timestamp": "2026-04-26T22:57:28.831814"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "LISTENING",
+      "distance": 0.1613479422320418,
+      "timestamp": "2026-04-26T22:57:31.576729"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.13574148608389208,
+      "timestamp": "2026-04-26T22:57:34.574058"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "OPTION_GUIDE",
+      "distance": 0.14689313972326495,
+      "timestamp": "2026-04-26T22:57:35.296129"
+    },
+    {
+      "from_state": "OPTION_GUIDE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.13198827892882437,
+      "timestamp": "2026-04-26T22:57:35.502867"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "OPTION_GUIDE",
+      "distance": 0.13330715064370668,
+      "timestamp": "2026-04-26T22:57:35.648418"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.13366176131795648,
+      "timestamp": "2026-04-26T22:57:35.823379"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "LISTENING",
+      "distance": 0.14047816695209794,
+      "timestamp": "2026-04-26T22:57:36.542842"
+    },
+    {
+      "from_state": "LISTENING",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.14366622770607526,
+      "timestamp": "2026-04-26T22:57:36.622298"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.13786097150318094,
+      "timestamp": "2026-04-26T22:57:36.782772"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.13519092079969003,
+      "timestamp": "2026-04-26T22:57:36.815844"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.13297303073129643,
+      "timestamp": "2026-04-26T22:57:37.108802"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.148487235481777,
+      "timestamp": "2026-04-26T22:57:39.005753"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.13851725278103316,
+      "timestamp": "2026-04-26T22:57:39.104759"
+    },
+    {
+      "from_state": "LISTENING",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.1447107189307313,
+      "timestamp": "2026-04-26T22:57:42.319021"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.1430193900384681,
+      "timestamp": "2026-04-26T22:57:46.307678"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.135461826467927,
+      "timestamp": "2026-04-26T22:57:46.816479"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.1427128326553909,
+      "timestamp": "2026-04-26T22:57:49.791988"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.1332189154891306,
+      "timestamp": "2026-04-26T22:57:49.902476"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.13698424516161575,
+      "timestamp": "2026-04-26T22:57:50.142524"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.13428726215279374,
+      "timestamp": "2026-04-26T22:57:50.176867"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "OPTION_GUIDE",
+      "distance": 0.13347938447846175,
+      "timestamp": "2026-04-26T22:57:50.240780"
+    },
+    {
+      "from_state": "OPTION_GUIDE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.13541410538733228,
+      "timestamp": "2026-04-26T22:57:50.319552"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.12370355671320106,
+      "timestamp": "2026-04-26T22:57:57.199052"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.18445409869018167,
+      "timestamp": "2026-04-26T22:57:57.407546"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "LISTENING",
+      "distance": 0.16595568527880758,
+      "timestamp": "2026-04-26T22:57:58.847948"
+    },
+    {
+      "from_state": "LISTENING",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.12654692886784477,
+      "timestamp": "2026-04-26T22:57:58.895613"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.15015019398099777,
+      "timestamp": "2026-04-26T22:57:59.053919"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.13081475867954787,
+      "timestamp": "2026-04-26T22:57:59.102490"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.1354161652945584,
+      "timestamp": "2026-04-26T22:58:00.031797"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.134515261380362,
+      "timestamp": "2026-04-26T22:58:00.095824"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.1283870762430645,
+      "timestamp": "2026-04-26T22:58:00.416595"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.15329357379216432,
+      "timestamp": "2026-04-26T22:58:00.750905"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.13858093698974594,
+      "timestamp": "2026-04-26T22:58:01.455863"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.1246789819927034,
+      "timestamp": "2026-04-26T22:58:01.551178"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.1349179047383006,
+      "timestamp": "2026-04-26T22:58:01.728034"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.1361226093315812,
+      "timestamp": "2026-04-26T22:58:02.112208"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "LISTENING",
+      "distance": 0.21035023642308703,
+      "timestamp": "2026-04-26T22:58:03.247019"
+    },
+    {
+      "from_state": "LISTENING",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.21303075251533532,
+      "timestamp": "2026-04-26T22:58:03.485284"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "IDLE",
+      "distance": 0.1257873396089942,
+      "timestamp": "2026-04-26T23:03:25.293312"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "PAYMENT_GUIDE",
+      "distance": 0.10823870083244612,
+      "timestamp": "2026-04-26T23:03:26.574278"
+    },
+    {
+      "from_state": "PAYMENT_GUIDE",
+      "to_state": "LISTENING",
+      "distance": 0.19484946409328924,
+      "timestamp": "2026-04-27T22:55:20.043771"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "LISTENING",
+      "distance": 0.11279921337857546,
+      "timestamp": "2026-04-27T22:55:36.651033"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "LISTENING",
+      "distance": 0.08637926202755762,
+      "timestamp": "2026-04-27T22:55:46.484203"
+    },
+    {
+      "from_state": "LISTENING",
+      "to_state": "IDLE",
+      "distance": 0.4312100877076794,
+      "timestamp": "2026-04-27T22:56:05.709779"
+    },
+    {
+      "from_state": "IDLE",
+      "to_state": "ERROR_RECOVERY",
+      "distance": 1.089851397206057,
+      "timestamp": "2026-04-27T23:10:16.402507"
+    }
+  ]
+}

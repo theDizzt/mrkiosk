@@ -1,0 +1,40 @@
+# 개인 메모 무시
+/vision/memo.txt
+
+# Unity (필수 무시)
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+
+# Unity 캐시
+MemoryCaptures/
+
+# Visual Studio / Rider
+.vs/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 로그 / 런타임 파일
+vision/log.jsonl
+vision/runtime_state.json
