@@ -102,9 +102,17 @@
               <div class="payment-cta-label">결제 수단 선택</div>
               <h3 class="payment-cta-heading">결제 방법을 선택해 주세요</h3>
               <div class="payment-cta-buttons">
-                <button type="button" class="payment-cta-btn" onclick="completePayment('카드')">카드</button>
-                <button type="button" class="payment-cta-btn" onclick="completePayment('간편페이')">간편페이</button>
-                <button type="button" class="payment-cta-btn" onclick="completePayment('기프티콘/쿠폰')">기프티콘/쿠폰</button>
+                <button type="button" class="payment-cta-btn" onclick="completePayment('카드')">
+                  <span class="payment-cta-title">카드 결제</span>
+                  <span class="payment-cta-sub">신용카드 / 체크카드</span>
+                </button>
+                <button type="button" class="payment-cta-btn" onclick="completePayment('간편')">
+                  <span class="payment-cta-title">간편결제</span>
+                  <span class="payment-cta-sub">카카오페이 / 네이버페이 / 삼성페이</span>
+                </button>
+                <button type="button" class="payment-cta-btn" onclick="completePayment('기프티콘/쿠폰')">
+                  <span class="payment-cta-title">기프티콘 / 쿠폰</span>
+                </button>
               </div>
               <button type="button" class="payment-back-cta" onclick="showScreen('screen-menu')">메뉴창으로 돌아가기</button>
             </div>

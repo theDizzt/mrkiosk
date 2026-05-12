@@ -32,6 +32,8 @@ button {
 }
 
 .app {
+  position: relative;
+  z-index: 0;
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -140,8 +142,9 @@ button {
   will-change: transform;
 }
 
-.home-choice-button:active {
-  transform: scale(0.95);
+.home-choice-button:active,
+.home-choice-button.touch-pressed {
+  transform: scale(0.97);
   transition-duration: 90ms;
   transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
 }
@@ -314,7 +317,7 @@ button {
   border-left: 1px solid var(--line);
   padding: 22px;
   display: grid;
-  grid-template-rows: 76px minmax(0, 1fr) 170px;
+  grid-template-rows: 76px minmax(0, 1fr) minmax(170px, auto);
   overflow: hidden;
 }
 
@@ -341,6 +344,8 @@ button {
 }
 
 .cart-list {
+  position: relative;
+  z-index: 0;
   min-height: 0;
   overflow-y: auto;
   padding: 16px 0;
@@ -392,6 +397,8 @@ button {
 }
 
 .order-bottom {
+  position: relative;
+  z-index: 1;
   border-top: 1px solid #dddddd;
   padding-top: 16px;
 }
@@ -451,7 +458,7 @@ button {
   justify-content: center;
   background: var(--brown);
   color: var(--surface);
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 16px;
   font-weight: 700;
   line-height: 1;
@@ -478,8 +485,9 @@ button {
   will-change: transform;
 }
 
-.checkout-button:not(:disabled):active {
-  transform: scale(0.95);
+.checkout-button:not(:disabled):active,
+.checkout-button:not(:disabled).touch-pressed {
+  transform: scale(0.97);
   transition-duration: 90ms;
   transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
 }
@@ -611,6 +619,8 @@ button {
 }
 
 .payment-cta-buttons {
+  position: relative;
+  z-index: 0;
   display: grid;
   grid-template-rows: repeat(3, minmax(0, 1fr));
   gap: 12px;
@@ -625,21 +635,42 @@ button {
   border-radius: 16px;
   border: none;
   background: var(--yellow);
-  color: var(--brown);
-  font-size: 23px;
-  font-weight: 800;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px 14px;
   transform: scale(1);
   transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
 
-.payment-cta-btn:active {
+.payment-cta-title {
+  font-size: 23px;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+.payment-cta-sub {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brown);
+  line-height: 2;
+}
+
+.payment-cta-btn:active,
+.payment-cta-btn.touch-pressed {
   transform: scale(0.97);
   transition-duration: 90ms;
   transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
 }
 
 .payment-back-cta {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 64px;
   margin-top: 16px;
@@ -654,7 +685,8 @@ button {
   will-change: transform;
 }
 
-.payment-back-cta:active {
+.payment-back-cta:active,
+.payment-back-cta.touch-pressed {
   transform: scale(0.97);
   transition-duration: 90ms;
   transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
@@ -740,10 +772,11 @@ button {
   gap: 14px;
 }
 
-/* 옵션 모달 */
+/* 옵션 모달 (주문 패널 등 앱 내부 z-index 위에 반드시 올라오도록) */
 .modal-overlay {
   position: fixed;
   inset: 0;
+  z-index: 2000;
   background: rgba(0, 0, 0, 0.38);
   display: flex;
   justify-content: center;
@@ -756,6 +789,8 @@ button {
 }
 
 .modal {
+  position: relative;
+  z-index: 1;
   width: 520px;
   background: #fefefe;
   border-radius: 20px;
@@ -862,8 +897,22 @@ button {
   will-change: transform;
 }
 
-.modal-footer .primary:not(:disabled):active {
-  transform: scale(0.95);
+.modal-footer .secondary {
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.modal-footer .secondary:active,
+.modal-footer .secondary.touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.modal-footer .primary:not(:disabled):active,
+.modal-footer .primary:not(:disabled).touch-pressed {
+  transform: scale(0.97);
   transition-duration: 90ms;
   transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
 }
@@ -875,6 +924,7 @@ button {
 
 .toast {
   position: fixed;
+  z-index: 2100;
   bottom: 28px;
   left: 50%;
   transform: translateX(-50%);

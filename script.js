@@ -393,3 +393,38 @@ function showToast(message) {
 setupCategoryButtons();
 renderMenus();
 renderOrderSummary();
+
+/** 터치/펜에서 :active 가 약할 때 눌림 모션 유지 (Pointer Events + touch, 종료는 window 캡처) */
+(function setupTouchPressFeedback() {
+  const root = document.querySelector(".device-frame");
+  if (!root) return;
+
+  const CLASS = "touch-pressed";
+  let pressed = null;
+
+  function clearPress() {
+    if (pressed) {
+      pressed.classList.remove(CLASS);
+      pressed = null;
+    }
+  }
+
+  function tryStartPress(e) {
+    if (e.pointerType === "mouse") return;
+    const btn = e.target.closest("button");
+    if (!btn || btn.disabled) return;
+    clearPress();
+    pressed = btn;
+    btn.classList.add(CLASS);
+  }
+
+  root.addEventListener("pointerdown", tryStartPress, { passive: true });
+  if (!window.PointerEvent) {
+    root.addEventListener("touchstart", tryStartPress, { passive: true });
+  }
+
+  window.addEventListener("pointerup", clearPress, true);
+  window.addEventListener("pointercancel", clearPress, true);
+  window.addEventListener("touchend", clearPress, true);
+  window.addEventListener("touchcancel", clearPress, true);
+})();
