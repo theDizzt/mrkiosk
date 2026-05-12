@@ -1,55 +1,84 @@
 const menuData = {
   Coffee: [
-    { id: 1, name: "아메리카노", price: 1500, image: "아메리카노.png" },
-    { id: 2, name: "카페라떼", price: 2000 },
-    { id: 3, name: "바닐라라떼", price: 2500 },
-    { id: 4, name: "연유라떼", price: 2300 },
-    { id: 5, name: "카라멜마끼아또", price: 2800 },
-    { id: 6, name: "카페모카", price: 2600 }
+    { id:  1, name: "아메리카노", price: 1500, image: "images/아메리카노.png" },
+    { id:  2, name: "카페라떼", price: 2000, image:"images/카페라떼.png" },
+    { id:  3, name: "바닐라라떼", price: 2500, image:"images/바닐라라떼.png" },
+    { id:  4, name: "연유라떼", price: 2300, image:"images/연유라떼.png" },
+    { id:  5, name: "카라멜마끼아또", price: 2800, image:"images/카라멜마끼아또.png" },
+    { id:  6, name: "카페모카", price: 2600, image:"images/카페모카.png" }
   ],
   Tea: [
-    { id: 7, name: "복숭아아이스티", price: 3500 },
-    { id: 8, name: "캐모마일티", price: 2000 },
-    { id: 9, name: "페퍼민트티", price: 2000 },
-    { id: 10, name: "얼그레이티", price: 2500 },
-    { id: 11, name: "유자티", price: 2200 },
-    { id: 12, name: "레몬티", price: 2300 }
+    { id:  7, name: "복숭아아이스티", price: 3500, image:"images/복숭아아이스티.png" },
+    { id:  8, name: "유자티", price: 2200, image:"images/유자티.png" },
+    { id:  9, name: "레몬티", price: 2300, image:"images/레몬티.png" },
+    { id: 10, name: "캐모마일티", price: 2000, image:"images/캐모마일티.png" },
+    { id: 11, name: "페퍼민트티", price: 2000, image:"images/페퍼민트티.png" },
+    { id: 12, name: "얼그레이티", price: 2500, image:"images/얼그레이티.png" },
   ],
   "Ade/Juice": [
-    { id: 13, name: "레몬에이드", price: 2800 },
-    { id: 14, name: "자몽에이드", price: 2800 },
-    { id: 15, name: "청포도에이드", price: 3000 },
-    { id: 16, name: "딸기주스", price: 2600 },
-    { id: 17, name: "오렌지주스", price: 2900 },
-    { id: 18, name: "망고주스", price: 2900 }
+    { id: 13, name: "자몽에이드", price: 2800, image:"images/자몽에이드.png" },
+    { id: 14, name: "레몬에이드", price: 2800, image:"images/레몬에이드.png" },
+    { id: 15, name: "청포도에이드", price: 3000, image:"images/청포도에이드.png" },
+    { id: 16, name: "딸기주스", price: 2600, image:"images/딸기주스.png" },
+    { id: 17, name: "오렌지주스", price: 2900, image:"images/오렌지주스.png" },
+    { id: 18, name: "망고주스", price: 2900, image: "images/망고주스.png" }
   ],
   Beverage: [
-    { id: 19, name: "초코라떼", price: 2700 },
-    { id: 20, name: "말차라떼", price: 2800 },
-    { id: 21, name: "고구마라떼", price: 2800 },
-    { id: 22, name: "딸기라떼", price: 2900 },
-    { id: 23, name: "바나나라떼", price: 3000 },
-    { id: 24, name: "블랙펄라떼", price: 2200, image: "블랙펄라떼.png" }
+    { id: 19, name: "초코라떼", price: 2700, image:"images/초코라떼.png" },
+    { id: 20, name: "말차라떼", price: 2800, image:"images/말차라떼.png" },
+    { id: 21, name: "고구마라떼", price: 2800, image:"images/고구마라떼.png" },
+    { id: 22, name: "딸기라떼", price: 2900, image:"images/딸기라떼.png" },
+    { id: 23, name: "바나나라떼", price: 3000, image:"images/바나나라떼.png" },
+    { id: 24, name: "블랙펄라떼", price: 2200, image: "images/블랙펄라떼.png" }
   ],
   Blended: [
-    { id: 25, name: "딸기스무디", price: 3200 },
-    { id: 26, name: "망고스무디", price: 3200 },
-    { id: 27, name: "블루베리스무디", price: 3500 },
-    { id: 28, name: "요거트스무디", price: 3500 },
-    { id: 29, name: "초코프라페", price: 3600 },
-    { id: 30, name: "밀크쉐이크", price: 3500 }
+    { id: 25, name: "딸기스무디", price: 3200, image:"images/딸기스무디.png" },
+    { id: 26, name: "망고스무디", price: 3200, image:"images/망고스무디.png" },
+    { id: 27, name: "블루베리스무디", price: 3500, image:"images/블루베리스무디.png" },
+    { id: 28, name: "요거트스무디", price: 3500, image:"images/요거트스무디.png" },
+    { id: 29, name: "초코프라페", price: 3600, image:"images/초코프라페.png" },
+    { id: 30, name: "밀크쉐이크", price: 3500, image:"images/밀크쉐이크.png" }
   ]
 };
 
+/** 옵션에서 HOT 없이 Only Iced만 노출하는 메뉴 */
+const ICED_ONLY_MENUS = new Set([
+  "딸기스무디",
+  "망고스무디",
+  "블루베리스무디",
+  "요거트스무디",
+  "초코프라페",
+  "밀크쉐이크",
+  "블랙펄라떼",
+  "딸기라떼",
+  "자몽에이드",
+  "레몬에이드",
+  "청포도에이드",
+  "딸기주스",
+  "오렌지주스",
+  "망고주스",
+  "복숭아아이스티"
+]);
+
+function isIcedOnlyMenu(menu) {
+  return menu && ICED_ONLY_MENUS.has(menu.name);
+}
+
+function tempDisplayLabel(temp, menuName) {
+  if (temp === "ICED" && ICED_ONLY_MENUS.has(menuName)) return "ONLY ICED";
+  return temp;
+}
+
 let currentCategory = "Coffee";
-let dineType = "매장";
+/** 첫 화면에서 선택: `'매장'` | `'포장'` */
+let dineType = null;
 let cart = [];
 let selectedMenu = null;
 
 let selectedOptions = {
-  temp: "ICED",
-  sweetness: "보통",
-  ice: "얼음 보통"
+  temp: null,
+  sweetness: null,
+  ice: null
 };
 
 function formatPrice(value) {
@@ -66,11 +95,10 @@ function showScreen(screenId) {
 
 function selectDineType(type) {
   dineType = type;
-
-  document.getElementById("receipt-dine-type").textContent =
-    type === "매장" ? "매장에서 먹고 갈게요" : "포장해서 갈게요";
-
-  showScreen("screen-menu");
+  // Leave a short moment so press animation is visible on touchscreens.
+  setTimeout(() => {
+    showScreen("screen-menu");
+  }, 120);
 }
 
 function setupCategoryButtons() {
@@ -112,9 +140,9 @@ function openModal(menu) {
   selectedMenu = menu;
 
   selectedOptions = {
-    temp: "ICED",
-    sweetness: "보통",
-    ice: "얼음 보통"
+    temp: null,
+    sweetness: null,
+    ice: null
   };
 
   document.getElementById("modal-menu-name").textContent = menu.name;
@@ -128,46 +156,79 @@ function closeModal() {
   selectedMenu = null;
 }
 
-function renderOptionButtons() {
-  createOptionGroup("temp-options", ["ICED", "HOT"], selectedOptions.temp, value => {
-    selectedOptions.temp = value;
-    renderOptionButtons();
-  });
+function areModalOptionsComplete() {
+  if (!selectedMenu) return false;
+  const { temp, sweetness, ice } = selectedOptions;
+  if (temp == null || sweetness == null) return false;
+  if (temp === "ICED" && ice == null) return false;
+  return true;
+}
 
-  createOptionGroup("sweet-options", ["덜 달게", "보통", "달게"], selectedOptions.sweetness, value => {
+function updateAddToCartButton() {
+  const btn = document.getElementById("add-to-cart-button");
+  if (btn) btn.disabled = !areModalOptionsComplete();
+}
+
+function renderOptionButtons() {
+  const icedOnly = isIcedOnlyMenu(selectedMenu);
+
+  if (icedOnly) {
+    createOptionGroup("temp-options", [{ value: "ICED", label: "ONLY ICED" }], selectedOptions.temp, value => {
+      selectedOptions.temp = value;
+      renderOptionButtons();
+    });
+  } else {
+    createOptionGroup("temp-options", ["ICED", "HOT"], selectedOptions.temp, value => {
+      selectedOptions.temp = value;
+      if (value === "HOT") selectedOptions.ice = null;
+      renderOptionButtons();
+    });
+  }
+
+  createOptionGroup("sweet-options", ["덜 달게", "당도 보통", "달게"], selectedOptions.sweetness, value => {
     selectedOptions.sweetness = value;
     renderOptionButtons();
   });
 
   const iceGroup = document.getElementById("ice-group");
+  const isIceDisabled = selectedOptions.temp === "HOT";
+  iceGroup.classList.toggle("disabled", isIceDisabled);
 
-  if (selectedOptions.temp === "ICED") {
-    iceGroup.style.display = "block";
-
-    createOptionGroup("ice-options", ["얼음 많이", "얼음 보통", "얼음 적게"], selectedOptions.ice, value => {
+  createOptionGroup(
+    "ice-options",
+    ["얼음 적게", "얼음 보통", "얼음 많이"],
+    selectedOptions.ice,
+    value => {
       selectedOptions.ice = value;
       renderOptionButtons();
-    });
-  } else {
-    iceGroup.style.display = "none";
-  }
+    },
+    isIceDisabled
+  );
+
+  updateAddToCartButton();
 }
 
-function createOptionGroup(containerId, options, selected, onClick) {
+function createOptionGroup(containerId, options, selected, onClick, disabled = false) {
   const container = document.getElementById(containerId);
   container.innerHTML = "";
 
   options.forEach(option => {
+    const value = typeof option === "object" && option !== null ? option.value : option;
+    const label = typeof option === "object" && option !== null ? option.label : option;
     const button = document.createElement("button");
-    button.className = `option-btn ${selected === option ? "active" : ""}`;
-    button.textContent = option;
-    button.onclick = () => onClick(option);
+    button.type = "button";
+    button.className = `option-btn ${selected === value ? "active" : ""}`;
+    button.textContent = label;
+    button.disabled = disabled;
+    button.onclick = () => {
+      if (!disabled) onClick(value);
+    };
     container.appendChild(button);
   });
 }
 
 function addToCart() {
-  if (!selectedMenu) return;
+  if (!selectedMenu || !areModalOptionsComplete()) return;
 
   const itemId = `${selectedMenu.id}-${selectedOptions.temp}-${selectedOptions.sweetness}-${selectedOptions.temp === "ICED" ? selectedOptions.ice : "NOICE"}`;
 
@@ -205,17 +266,18 @@ function renderOrderSummary() {
   payButton.disabled = totalCount === 0;
 
   if (cart.length === 0) {
-    cartListEl.innerHTML = `<div class="cart-empty">담은 메뉴가 없습니다.</div>`;
+    cartListEl.innerHTML = `<div class="cart-empty">담은 메뉴가 없습니다</div>`;
     return;
   }
 
   cartListEl.innerHTML = "";
 
   cart.forEach(item => {
+    const tempLabel = tempDisplayLabel(item.temp, item.name);
     const optionText =
       item.temp === "ICED"
-        ? `${item.temp} · ${item.sweetness} · ${item.ice}`
-        : `${item.temp} · ${item.sweetness}`;
+        ? `${tempLabel} · ${item.sweetness} · ${item.ice}`
+        : `${tempLabel} · ${item.sweetness}`;
 
     const itemEl = document.createElement("div");
     itemEl.className = "cart-item";
@@ -227,13 +289,13 @@ function renderOrderSummary() {
           <div class="cart-item-option">${optionText}</div>
         </div>
         <strong class="cart-item-price">${formatPrice(item.price * item.quantity)}</strong>
-      </strong>
+      </div>
 
       <div class="cart-qty-row">
         <div class="qty-control">
-          <button onclick="changeQuantity('${item.id}', -1)">-</button>
-          <strong>${item.quantity}</strong>
-          <button onclick="changeQuantity('${item.id}', 1)">+</button>
+          <button type="button" aria-label="수량 감소" onclick="changeQuantity('${item.id}', -1)">-</button>
+          <strong class="qty-value">${item.quantity}</strong>
+          <button type="button" aria-label="수량 증가" onclick="changeQuantity('${item.id}', 1)">+</button>
         </div>
       </div>
     `;
@@ -242,43 +304,69 @@ function renderOrderSummary() {
   });
 }
 
-function goToReceipt() {
-  if (cart.length === 0) return;
+function changeQuantity(itemId, delta) {
+  const targetItem = cart.find(item => item.id === itemId);
+  if (!targetItem) return;
 
-  const receiptItems = document.getElementById("receipt-items");
-  const receiptTotalPrice = document.getElementById("receipt-total-price");
+  targetItem.quantity += delta;
 
-  receiptItems.innerHTML = "";
+  if (targetItem.quantity <= 0) {
+    cart = cart.filter(item => item.id !== itemId);
+  }
+
+  renderOrderSummary();
+}
+
+function renderPaymentReceipt() {
+  const container = document.getElementById("payment-receipt-items");
+  const countEl = document.getElementById("payment-order-count");
+  const totalEl = document.getElementById("payment-total-price");
+  const greetEl = document.getElementById("payment-dine-greeting");
+  if (!container || !countEl || !totalEl) return;
+
+  if (greetEl) {
+    greetEl.textContent =
+      dineType === "포장"
+        ? "고객님, 포장해 가시는군요!"
+        : "고객님, 매장에서 드시고 가시는군요!";
+  }
+
+  const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  countEl.textContent = `${totalCount}개`;
+  totalEl.textContent = formatPrice(totalPrice);
+
+  container.innerHTML = "";
 
   cart.forEach(item => {
+    const tempLabel = tempDisplayLabel(item.temp, item.name);
     const optionText =
       item.temp === "ICED"
-        ? `${item.temp} · ${item.sweetness} · ${item.ice}`
-        : `${item.temp} · ${item.sweetness}`;
+        ? `${tempLabel} · ${item.sweetness} · ${item.ice}`
+        : `${tempLabel} · ${item.sweetness}`;
 
     const itemEl = document.createElement("div");
     itemEl.className = "receipt-item";
-
     itemEl.innerHTML = `
       <div class="receipt-item-top">
         <div>
-          <div class="receipt-item-name">${item.name}</div>
+          <div class="receipt-item-name">${item.name} · ${item.quantity}개</div>
           <div class="receipt-item-option">${optionText}</div>
         </div>
         <div class="receipt-item-right">
-          <div>수량 ${item.quantity}</div>
           <strong>${formatPrice(item.price * item.quantity)}</strong>
         </div>
       </div>
     `;
-
-    receiptItems.appendChild(itemEl);
+    container.appendChild(itemEl);
   });
+}
 
-  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  receiptTotalPrice.textContent = formatPrice(totalPrice);
-
-  showScreen("screen-receipt");
+function goToPayment() {
+  if (cart.length === 0) return;
+  renderPaymentReceipt();
+  showScreen("screen-payment");
 }
 
 function completePayment(method) {
@@ -286,6 +374,7 @@ function completePayment(method) {
 
   setTimeout(() => {
     cart = [];
+    dineType = null;
     renderOrderSummary();
     showScreen("screen-home");
   }, 1200);
