@@ -85,12 +85,68 @@ function formatPrice(value) {
   return `${value.toLocaleString()}원`;
 }
 
+let paymentCompleteCountdownTimer = null;
+
+function stopPaymentCompleteCountdown() {
+  if (paymentCompleteCountdownTimer !== null) {
+    clearInterval(paymentCompleteCountdownTimer);
+    paymentCompleteCountdownTimer = null;
+  }
+}
+
+function startPaymentCompleteCountdown() {
+  stopPaymentCompleteCountdown();
+  const el = document.getElementById("payment-complete-countdown");
+  let remaining = 15;
+
+  function updateText() {
+    if (el) el.textContent = `${remaining}초 후에 자동으로 닫혀요`;
+  }
+
+  updateText();
+
+  paymentCompleteCountdownTimer = setInterval(() => {
+    remaining -= 1;
+    if (remaining <= 0) {
+      stopPaymentCompleteCountdown();
+      finishDemoPaymentToHome();
+      return;
+    }
+    updateText();
+  }, 1000);
+}
+
 function showScreen(screenId) {
   document.querySelectorAll(".screen").forEach(screen => {
     screen.classList.remove("active");
   });
 
   document.getElementById(screenId).classList.add("active");
+
+  document.querySelector(".device-frame")?.classList.toggle("on-home-screen", screenId === "screen-home");
+
+  if (screenId === "screen-payment-complete") {
+    startPaymentCompleteCountdown();
+  } else {
+    stopPaymentCompleteCountdown();
+  }
+}
+
+function openHomeConfirmModal() {
+  document.getElementById("home-confirm-modal")?.classList.remove("hidden");
+}
+
+function closeHomeConfirmModal() {
+  document.getElementById("home-confirm-modal")?.classList.add("hidden");
+}
+
+function confirmGoHome() {
+  cart = [];
+  dineType = null;
+  closeModal();
+  closeHomeConfirmModal();
+  renderOrderSummary();
+  showScreen("screen-home");
 }
 
 function selectDineType(type) {
@@ -369,27 +425,17 @@ function goToPayment() {
   showScreen("screen-payment");
 }
 
-function completePayment(method) {
-  showToast(`${method} 결제가 완료되었습니다.`);
-
-  setTimeout(() => {
-    cart = [];
-    dineType = null;
-    renderOrderSummary();
-    showScreen("screen-home");
-  }, 1200);
+function completePayment() {
+  showScreen("screen-payment-complete");
 }
 
-function showToast(message) {
-  const toast = document.getElementById("toast");
-  toast.textContent = message;
-  toast.classList.remove("hidden");
-
-  setTimeout(() => {
-    toast.classList.add("hidden");
-  }, 1000);
+function finishDemoPaymentToHome() {
+  stopPaymentCompleteCountdown();
+  cart = [];
+  dineType = null;
+  renderOrderSummary();
+  showScreen("screen-home");
 }
-
 setupCategoryButtons();
 renderMenus();
 renderOrderSummary();

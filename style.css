@@ -53,15 +53,54 @@ button {
   height: 72px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding: 0 32px;
   background: #fefefe;
   border-bottom: 1px solid var(--line);
 }
 
 .brand {
-  font-size: 30px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 35px;
   font-weight: 900;
   color: var(--text-dark);
+}
+
+.device-frame.on-home-screen .topbar-home-btn {
+  display: none;
+}
+
+.topbar-home-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  min-height: 52px;
+  padding: 4px 8px;
+  margin: 0 -8px 0 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--text-dark);
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.topbar-home-btn:active,
+.topbar-home-btn.touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.topbar-home-icon {
+  display: block;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
 }
 
 .screen {
@@ -597,25 +636,29 @@ button {
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 0;
 }
 
 .payment-cta-label {
+  flex-shrink: 0;
   font-size: 28px;
   font-weight: 800;
   color: var(--text-dark);
-  margin: 6px 0 0;
+  margin: 0 0 6px;
   line-height: 1;
 }
 
 .payment-cta-heading {
-  margin: 6px 0 0;
+  flex-shrink: 0;
+  margin: 2px 0 0;
+  padding-bottom: 12px;
   font-size: 16px;
   font-weight: 600;
   color: var(--text-soft);
   line-height: 1.45;
   white-space: nowrap;
+  border-bottom: 1px solid #dddddd;
 }
 
 .payment-cta-buttons {
@@ -624,7 +667,7 @@ button {
   display: grid;
   grid-template-rows: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  margin-top: 24px;
+  margin-top: 14px;
   flex: 1;
   min-height: 0;
 }
@@ -690,6 +733,102 @@ button {
   transform: scale(0.97);
   transition-duration: 90ms;
   transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* 시연용 결제 완료 (전체 화면) */
+#screen-payment-complete {
+  background: #f4f4f4;
+}
+
+.payment-complete-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 32px 20px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.payment-complete-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+}
+
+.payment-complete-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  flex-shrink: 0;
+  transform: translateY(-24px);
+}
+
+.payment-complete-illustration {
+  display: block;
+  width: min(100%, 278px);
+  height: auto;
+  max-height: min(51vh, 253px);
+  margin: 0 0 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.payment-complete-title {
+  margin: 0 0 6px;
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1.25;
+}
+
+.payment-complete-note {
+  margin: 0 0 36px;
+  max-width: 440px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+
+.payment-complete-home-btn {
+  width: min(100%, 420px);
+  height: 80px;
+  border: none;
+  border-radius: 14px;
+  background: var(--yellow);
+  color: var(--text-dark);
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.payment-complete-home-btn:active,
+.payment-complete-home-btn.touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.payment-complete-countdown {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0 8px 8px;
+  width: 100%;
+  max-width: 520px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-soft);
+  line-height: 1.45;
 }
 
 /* 주문 확인 화면 */
@@ -772,6 +911,37 @@ button {
   gap: 14px;
 }
 
+.modal-overlay.home-confirm-overlay {
+  z-index: 2200;
+}
+
+.modal.home-confirm-dialog {
+  width: min(440px, 92vw);
+  padding: 28px 26px 26px;
+}
+
+.home-confirm-title {
+  margin: 0 0 10px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-dark);
+  text-align: center;
+  line-height: 1.35;
+}
+
+.home-confirm-body {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.modal-footer.home-confirm-footer {
+  margin-top: 30px;
+}
+
 /* 옵션 모달 (주문 패널 등 앱 내부 z-index 위에 반드시 올라오도록) */
 .modal-overlay {
   position: fixed;
@@ -846,19 +1016,26 @@ button {
 }
 
 .option-btn {
-  padding: 14px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 8px 10px;
   background: #f2f2f2;
   color: #666;
   border-radius: 14px;
   font-weight: 700;
   font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
   border: 2px solid transparent;
+  box-sizing: border-box;
 }
 
 .option-btn.active {
   background: var(--yellow);
   color: #4f4f4f;
-  border: 1px solid rgba(91, 82, 74, 0.3);
+  border: 2px solid rgba(91, 82, 74, 0.3);
   box-shadow: 0 4px 14px rgba(91, 82, 74, 0.35);
   font-weight: 800;
 }
@@ -920,18 +1097,4 @@ button {
 .modal-footer .primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-.toast {
-  position: fixed;
-  z-index: 2100;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #4f4f4f;
-  color: #fefefe;
-  padding: 14px 22px;
-  border-radius: 999px;
-  font-size: 18px;
-  font-weight: 700;
 }
