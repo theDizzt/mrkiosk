@@ -17,6 +17,9 @@ public class RuntimeStateReader : MonoBehaviour
     [Header("Polling interval (seconds)")]
     public float updateInterval = 0.1f;
 
+    [Header("Smooth movement")]
+    public float moveLerpSpeed = 0.4f;
+
     private float timer = 0f;
     private string lastTimestamp = "";
 
