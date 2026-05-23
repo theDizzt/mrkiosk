@@ -5,6 +5,9 @@ from pathlib import Path
 from config import STATE_MAP
 
 # 정상 주문 흐름
+# HCI 평가 연계:
+# 시니어 사용자의 주문 과업을 단계별 FSM 흐름으로 정의.
+# 각 단계의 진입/이탈 시간은 과업 수행 시간과 실패 구간 분석에 사용.
 ROUTE = [
     "IDLE",
     "LISTENING",
@@ -16,6 +19,9 @@ ROUTE = [
 ]
 
 # 오류/예외 상태
+# HCI 평가 연계:
+# 사용자가 길을 잃거나 시스템이 잘못된 상태를 감지했을 때 복구 가이드를 제공하기 위한 상태.
+# 사후 분석 시 오류 발생 빈도와 복구 성공 여부 평가.
 ERROR_STATES = {
     "ERROR_RECOVERY",
     "FAIL_SAFE",
@@ -39,6 +45,9 @@ class MarkerFSM:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
 
+    # HCI 평가 연계:
+    # 비정상적인 마커 인식이나 사용자의 예외 행동으로 인해 잘못된 단계로 이동하지 않도록 제한.
+    # 이는 과업 성공률과 오류 회복성 평가에 영향.
     def is_valid_transition(self, current_state: str, new_state: str) -> bool:
 
         # 정상 Route 기준으로 상태 전이가 가능한지 검사
