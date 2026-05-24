@@ -499,7 +499,7 @@ def main():
         return
 
     aruco_detector = create_aruco_detector()
-    fsm = MarkerFSM("states.json")
+    fsm = MarkerFSM("vision/states.json")
 
     camera_matrix, dist_coeffs = load_calibration()
 
