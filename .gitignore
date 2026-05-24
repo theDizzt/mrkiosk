@@ -38,3 +38,12 @@ __pycache__/
 # 로그 / 런타임 파일
 vision/log.jsonl
 vision/runtime_state.json
+
+# Generated marker images
+data/state_markers/
+
+# Android / Quest build outputs
+*.apk
+*.aab
+*.keystore
+*.jks
