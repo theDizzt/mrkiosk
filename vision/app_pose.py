@@ -312,22 +312,39 @@ def append_log_event(state, marker_id, rvec=None, tvec=None, payload=None):
     log = {
         "timestamp": datetime.now().isoformat(),
         "state": state,
-        "marker_id": marker_id,
+        "marker_id": int(marker_id), # 안전하게 정수형 변환
         "event": "state_enter"
     }
 
+    # 1. rvec 소수점 4자리 정제 후 리스트 변환
     if rvec is not None:
-        log["rvec"] = rvec.flatten().tolist()
+        log["rvec"] = [round(float(x), 4) for x in rvec.flatten()]
 
+    # 2. tvec 소수점 4자리 정제 후 리스트 변환
     if tvec is not None:
-        log["tvec"] = tvec.flatten().tolist()
+        log["tvec"] = [round(float(x), 4) for x in tvec.flatten()]
 
+    # 3. payload 복사 후 내부 좌표들(world_position, local_position) 소수점 정제
     if payload is not None:
-        log["payload"] = payload
+        cleaned_payload = payload.copy() # 원본 데이터가 꼬이지 않게 복사본 사용
+        
+        # world_position 소수점 4자리 반올림
+        if "world_position" in cleaned_payload and isinstance(cleaned_payload["world_position"], dict):
+            cleaned_payload["world_position"] = {
+                k: round(float(v), 4) for k, v in cleaned_payload["world_position"].items()
+            }
+            
+        # local_position 소수점 4자리 반올림
+        if "local_position" in cleaned_payload and isinstance(cleaned_payload["local_position"], dict):
+            cleaned_payload["local_position"] = {
+                k: round(float(v), 4) for k, v in cleaned_payload["local_position"].items()
+            }
+            
+        log["payload"] = cleaned_payload
 
+    # 4. 파일에 한 줄로 쓰기
     with open("log.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(log, ensure_ascii=False) + "\n")
-
 
 # 죄표 변환
 # HCI 평가 연계:
