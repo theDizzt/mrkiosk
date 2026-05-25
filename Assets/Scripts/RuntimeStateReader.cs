@@ -14,8 +14,13 @@ public class RuntimeStateReader : MonoBehaviour
     [Header("Scale for converting Python meters to Unity world")]
     public float positionScale = 1.0f;
 
+    // HCI 평가 연계:
+    // 사용자 행동 후 다음 가이드가 표시되기까지의 지연 시간을 0.1초 이내로 유지하기 위해 runtime_state.json을 0.1초 주기로 확인.  
     [Header("Polling interval (seconds)")]
     public float updateInterval = 0.1f;
+
+    [Header("Smooth movement")]
+    public float moveLerpSpeed = 0.4f;
 
     private float timer = 0f;
     private string lastTimestamp = "";
@@ -74,6 +79,9 @@ public class RuntimeStateReader : MonoBehaviour
     void Update()
     {
         // guideObject가 있으면 매 프레임 부드럽게 목표 위치로 이동
+        // HCI 평가 연계:
+        // 가이드 링이 갑자기 이동하면 시니어 사용자의 시선 추적과 위치 인지가 어려워질 수 있음.
+        // Lerp로 부드럽게 이동시켜 시각적 부담을 줄임.
         if (guideObject != null)
         {
             guideObject.position = Vector3.Lerp(
@@ -131,6 +139,9 @@ public class RuntimeStateReader : MonoBehaviour
                 return;
             }
 
+            // HCI 평가 연계:
+            // timestamp가 바뀐 경우에만 새 상태로 판단.
+            // Python 로그 timestamp와 Unity 적용 시점을 비교 -> 시스템 반응 속도를 측정.
             lastTimestamp = data.timestamp;
 
             Vector3 newPosition = ConvertPythonPoseToUnity(data);
@@ -149,6 +160,9 @@ public class RuntimeStateReader : MonoBehaviour
         }
     }
 
+    // HCI 평가 연계:
+    // Python/OpenCV에서 계산한 3D 위치를 Unity MR 공간에 맞게 변.
+    // 이 변환 정확도가 실제 버튼과 가이드 링 사이의 공간 정합 오차에 영향을 줌.
     Vector3 ConvertPythonPoseToUnity(RuntimeState data)
     {
         float x = 0f;
