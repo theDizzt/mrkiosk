@@ -69,12 +69,15 @@ public class RuntimeStateReader : MonoBehaviour
 
     void Start()
     {
+        // 자동으로 프로젝트 폴더(mrkiosk) 바로 아래의 runtime_state.json 확인.
+        jsonFilePath = Path.Combine(Application.dataPath, "../runtime_state.json");
+
         if (guideObject != null)
         {
             guideRenderer = guideObject.GetComponent<Renderer>();
             targetPosition = guideObject.position;
         }
-    }
+}
 
     void Update()
     {
@@ -204,30 +207,15 @@ public class RuntimeStateReader : MonoBehaviour
 
         switch (state)
         {
-            case "IDLE":
-                targetColor = Color.gray;
-                break;
-            case "LISTENING":
-                targetColor = Color.blue;
-                break;
-            case "MENU_GUIDE":
-                targetColor = Color.green;
-                break;
-            case "OPTION_GUIDE":
-                targetColor = Color.yellow;
-                break;
-            case "PAYMENT_GUIDE":
-                targetColor = Color.red;
-                break;
-            case "CONFIRM":
-                targetColor = Color.cyan;
-                break;
-            case "ERROR_RECOVERY":
-                targetColor = new Color(1f, 0.5f, 0f);
-                break;
-            case "FAIL_SAFE":
-                targetColor = new Color(0.6f, 0.2f, 1f);
-                break;
+            case "IDLE": targetColor = Color.gray; break;
+            case "LISTENING": targetColor = Color.blue; break;
+            case "CATEGORY_SELECT": targetColor = Color.green; break; // MENU_GUIDE에서 변경
+            case "ITEM_SELECT": targetColor = Color.green; break;     // 추가
+            case "OPTION_SELECT": targetColor = Color.yellow; break;  // OPTION_GUIDE에서 변경
+            case "PAYMENT_SELECT": targetColor = Color.red; break;    // PAYMENT_GUIDE에서 변경
+            case "CONFIRM": targetColor = Color.cyan; break;
+            case "ERROR_RECOVERY": targetColor = new Color(1f, 0.5f, 0f); break;
+            case "FAIL_SAFE": targetColor = new Color(0.6f, 0.2f, 1f); break;
         }
 
         guideRenderer.material.color = targetColor;
