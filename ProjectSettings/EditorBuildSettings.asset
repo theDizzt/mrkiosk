@@ -4,5 +4,12 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
-  m_configObjects: {}
+  m_Scenes:
+  - enabled: 1
+    path: Assets/mrkiosk.unity
+    guid: c6e24ddc83de7f4429fdce7f1f01f9e4
+  m_configObjects:
+    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: c2bf7d650c7e7df48b8e5358b822eb48, type: 2}
+    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: d3a0e9b3e1e5bb248b0056627cc5dc7f, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 16187bf7922b7714390871dec1caf95f, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: cf19aea54cf01c64fa562640e058d403, type: 2}

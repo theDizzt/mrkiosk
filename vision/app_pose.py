@@ -16,7 +16,9 @@ from config import (
 
 from marker_fsm import MarkerFSM
 
-
+# HCI 평가 연계:
+# 단일 프레임 오인식으로 가이드가 잘못 이동하면 사용자의 오클릭률이 증가할 수 있음.
+# 최근 N프레임 중 일정 횟수 이상 동일한 상태가 감지될 때만 상태를 확정하여 시니어 사용자의 혼란을 줄이고 가이드 안정성을 높임.
 class StableStateDecoder:
     def __init__(self, window_size=7, min_count=4):
         self.history = deque(maxlen=window_size)
@@ -91,6 +93,9 @@ def order_corners(points):
 
 
 # 2x5 비트 마커 디코딩
+# HCI 평가 연계:
+# 2x5 마커는 현재 키오스크 단계/FSM 상태 의미.
+# 이 값이 정확해야 사용자의 현재 과업 위치와 가이드 위치를 올바르게 기록 가능.
 def decode_2x5_marker(gray, corners):
     # corners: (4,2) 형태 (marker 영역)
     # return: int marker_id (0~1023) or None
@@ -247,7 +252,9 @@ def detect_state_markers(gray, aruco_corners=None):
 
     return state_markers
 
-
+# HCI 평가 연계:
+# MR 가이드 링이 순간적으로 튀면 실제 버튼과 가상 링의 정합 오차가 커지고 사용자가 잘못된 위치를 누를 가능성이 높아짐.
+# EMA와 이상치 제거를 통해 링 위치를 안정화 함.
 class PositionFilter:
     def __init__(self, alpha=0.35, threshold=0.08, max_hold=5):
         self.prev = None
@@ -299,28 +306,50 @@ class PositionFilter:
 
 
 # 상태 변경 이력을 누적 저장하는 함수 추가
+# HCI 평가 연계:
+# 상태 진입 시각, marker_id, pose, payload를 누적 저장하여 과업 수행 시간, 이탈 구간, 특정 단계에서의 지연 여부를 사후 분석.
 def append_log_event(state, marker_id, rvec=None, tvec=None, payload=None):
     log = {
         "timestamp": datetime.now().isoformat(),
         "state": state,
-        "marker_id": marker_id,
+        "marker_id": int(marker_id), # 안전하게 정수형 변환
         "event": "state_enter"
     }
 
+    # 1. rvec 소수점 4자리 정제 후 리스트 변환
     if rvec is not None:
-        log["rvec"] = rvec.flatten().tolist()
+        log["rvec"] = [round(float(x), 4) for x in rvec.flatten()]
 
+    # 2. tvec 소수점 4자리 정제 후 리스트 변환
     if tvec is not None:
-        log["tvec"] = tvec.flatten().tolist()
+        log["tvec"] = [round(float(x), 4) for x in tvec.flatten()]
 
+    # 3. payload 복사 후 내부 좌표들(world_position, local_position) 소수점 정제
     if payload is not None:
-        log["payload"] = payload
+        cleaned_payload = payload.copy() # 원본 데이터가 꼬이지 않게 복사본 사용
+        
+        # world_position 소수점 4자리 반올림
+        if "world_position" in cleaned_payload and isinstance(cleaned_payload["world_position"], dict):
+            cleaned_payload["world_position"] = {
+                k: round(float(v), 4) for k, v in cleaned_payload["world_position"].items()
+            }
+            
+        # local_position 소수점 4자리 반올림
+        if "local_position" in cleaned_payload and isinstance(cleaned_payload["local_position"], dict):
+            cleaned_payload["local_position"] = {
+                k: round(float(v), 4) for k, v in cleaned_payload["local_position"].items()
+            }
+            
+        log["payload"] = cleaned_payload
 
+    # 4. 파일에 한 줄로 쓰기
     with open("log.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(log, ensure_ascii=False) + "\n")
 
-
 # 죄표 변환
+# HCI 평가 연계:
+# 키오스크 버튼 기준 local_position을 카메라 좌표계의 world_position으로 변환.
+# 이 좌표가 Unity 가이드 링 위치의 기준이 되므로 공간 정합 오차 평가의 핵심 지점.
 def local_to_camera_world(rvec, tvec, local_position):
     # 문서 구조 기준:
     # P_camera = R * P_local + t
@@ -361,6 +390,9 @@ def log_event(state, marker_id, tvec=None):
 
 
 # Unity가 읽기 쉬운 최신 상태 파일 저장 함수 추가
+# HCI 평가 연계:
+# Unity가 최신 상태를 즉시 읽을 수 있도록 runtime_state.json 갱신.
+# timestamp를 통해 사용자 행동 후 다음 가이드가 표시되기까지의 반응 시간 측정.
 def write_runtime_state(state, marker_id, rvec=None, tvec=None, payload=None):
     runtime_data = {
         "timestamp": datetime.now().isoformat(),
@@ -484,7 +516,7 @@ def main():
         return
 
     aruco_detector = create_aruco_detector()
-    fsm = MarkerFSM("states.json")
+    fsm = MarkerFSM("vision/states.json")
 
     camera_matrix, dist_coeffs = load_calibration()
 
@@ -628,6 +660,9 @@ def main():
                     2
                 )
             else:
+                # HCI 평가 연계:
+                # 상태가 변경된 순간만 로그와 runtime_state 갱신.
+                # 중복 기록을 줄이고 단계별 진입 시점을 명확히 하여 과업 시간 분석에 사용.
                 changed = fsm.update_by_marker_id(detected_state_id)
 
                 if changed:
