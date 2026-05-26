@@ -1,39 +1,119 @@
-# HCI 평가 연계:
-# marker_id는 사용자가 위치한 키오스크 과업 단계 의미.
-# 로그 분석 시 marker_id를 기준으로 어느 단계에서 시간이 오래 걸렸는지 어느 단계에서 오류가 자주 발생했는지 구분.
-
-STATE_MAP = {
-    # 000~099: System
-    0: "IDLE",
-    1: "LISTENING",
-
-    # 100~199: Category
-    100: "CATEGORY_SELECT",
-
-    # 200~399: Item
-    200: "ITEM_SELECT",
-
-    # 400~499: Option
-    400: "OPTION_SELECT",
-
-    # 600~699: Payment
-    600: "PAYMENT_SELECT",
-
-    # 700~799: Complete
-    700: "CONFIRM",
-
-    # 800~899: Recovery
-    800: "ERROR_RECOVERY",
-
-    # 900~1023: Exception
-    900: "FAIL_SAFE"
-}
-
 REFERENCE_ARUCO_ID = 0
 
-CAMERA_INDEX = 0
-MARKER_LENGTH = 0.05  # 5 cm
+ARUCO_DICT_NAME = "DICT_5X5_1000"
 
-CALIBRATION_DIR = "calibration"
-CAMERA_MATRIX_FILE = "calibration/camera_matrix.npy"
-DIST_COEFFS_FILE = "calibration/dist_coeffs.npy"
+MARKER_LENGTH_M = 0.05
+
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
+
+STATE_MAP = {
+    10: {
+        "name": "MAIN_MENU",
+        "label": "메인 화면",
+        "target": {
+            "x": 960,
+            "y": 540,
+            "width": 700,
+            "height": 500,
+        },
+    },
+    20: {
+        "name": "ORDER_START",
+        "label": "주문 시작",
+        "target": {
+            "x": 960,
+            "y": 860,
+            "width": 420,
+            "height": 110,
+        },
+    },
+    30: {
+        "name": "MENU_SELECT",
+        "label": "메뉴 선택",
+        "target": {
+            "x": 520,
+            "y": 420,
+            "width": 260,
+            "height": 220,
+        },
+    },
+    40: {
+        "name": "OPTION_SELECT",
+        "label": "옵션 선택",
+        "target": {
+            "x": 1420,
+            "y": 520,
+            "width": 360,
+            "height": 180,
+        },
+    },
+    50: {
+        "name": "CART_CONFIRM",
+        "label": "장바구니 확인",
+        "target": {
+            "x": 1600,
+            "y": 900,
+            "width": 360,
+            "height": 120,
+        },
+    },
+    60: {
+        "name": "PAYMENT_GUIDE",
+        "label": "결제 안내",
+        "target": {
+            "x": 1700,
+            "y": 930,
+            "width": 320,
+            "height": 110,
+        },
+    },
+    70: {
+        "name": "PAYMENT_PROCESSING",
+        "label": "결제 진행 중",
+        "target": {
+            "x": 960,
+            "y": 540,
+            "width": 500,
+            "height": 180,
+        },
+    },
+    80: {
+        "name": "PAYMENT_COMPLETE",
+        "label": "결제 완료",
+        "target": {
+            "x": 960,
+            "y": 540,
+            "width": 500,
+            "height": 180,
+        },
+    },
+    90: {
+        "name": "ERROR_HELP",
+        "label": "오류 / 도움말",
+        "target": {
+            "x": 960,
+            "y": 900,
+            "width": 700,
+            "height": 140,
+        },
+    },
+}
+
+
+def get_state_info(marker_id):
+    if marker_id is None or marker_id < 0:
+        return {
+            "name": "UNKNOWN",
+            "label": "상태 마커 없음",
+            "target": None,
+        }
+
+    return STATE_MAP.get(
+        marker_id,
+        {
+            "name": "UNMAPPED",
+            "label": "매핑되지 않은 상태",
+            "target": None,
+        },
+    )
