@@ -41,12 +41,56 @@ button {
   padding: 24px;
 }
 
+.device-shell {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
 .device-frame {
+  position: relative;
   width: 1024px;
   height: 720px;
   background: var(--surface);
   box-shadow: var(--shadow);
   overflow: hidden;
+}
+
+/* 브라우저 화면 네 모서리 (키오스크 밖, 가장자리에서 20px) */
+.corner-markers {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.corner-marker {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  background: #000;
+}
+
+.corner-marker--tl {
+  top: 20px;
+  left: 20px;
+  background: url('markers/marker_0.png') center / 100% 100% no-repeat;
+}
+
+.corner-marker--tr {
+  top: 20px;
+  right: 20px;
+  background: url('markers/marker_0.png') center / 100% 100% no-repeat;
+}
+
+.corner-marker--bl {
+  bottom: 20px;
+  left: 20px;
+}
+
+.corner-marker--br {
+  bottom: 20px;
+  right: 20px;
 }
 
 .topbar {

@@ -70,16 +70,73 @@ function tempDisplayLabel(temp, menuName) {
 }
 
 let currentCategory = "Coffee";
+const CATEGORY_INDEX = {
+  Coffee: 1,
+  Tea: 2,
+  "Ade/Juice": 3,
+  Beverage: 4,
+  Blended: 5
+};
 /** 첫 화면에서 선택: `'매장'` | `'포장'` */
 let dineType = null;
 let cart = [];
 let selectedMenu = null;
+let lastCartCommonRefId = null;
 
 let selectedOptions = {
   temp: null,
   sweetness: null,
   ice: null
 };
+
+function applyMarkerImage(el, markerId) {
+  if (!el) return;
+  el.style.background = `url('markers/marker_${markerId}.png') center / 100% 100% no-repeat`;
+}
+
+function getMenuHash(menu) {
+  // 공통 참조 ID: 카테고리 순 + 카테고리 내 표시 순서(현재 데이터 id 1~30과 동일)
+  const commonRefId = Math.max(0, (menu?.id ?? 1) - 1);
+  return commonRefId % 6;
+}
+
+function getOptionMarkerId() {
+  const menuHash = getMenuHash(selectedMenu);
+  const temperature =
+    selectedOptions.temp == null ? 0 : (selectedOptions.temp === "HOT" ? 2 : 1);
+  const sugar = selectedOptions.sweetness == null ? 0 : 1;
+  const ice = selectedOptions.ice == null ? 0 : 1;
+
+  return 256 + menuHash * 32 + temperature * 8 + sugar * 4 + ice * 2;
+}
+
+function updateBottomMarkers() {
+  const left = document.querySelector(".corner-marker--bl");
+  const right = document.querySelector(".corner-marker--br");
+  if (!left || !right) return;
+
+  const isHome = document.getElementById("screen-home")?.classList.contains("active");
+  const isPaymentFlow =
+    document.getElementById("screen-payment")?.classList.contains("active") ||
+    document.getElementById("screen-payment-complete")?.classList.contains("active");
+  const isOptionModalOpen = !document.getElementById("option-modal")?.classList.contains("hidden");
+  const hasCartItem = cart.length > 0 && lastCartCommonRefId != null;
+
+  left.style.visibility = "visible";
+  right.style.visibility = "visible";
+
+  const markerId = isOptionModalOpen
+    ? getOptionMarkerId()
+    : isPaymentFlow
+      ? 768
+      : hasCartItem
+        ? 512 + lastCartCommonRefId * 4
+        : isHome
+          ? 0
+          : (CATEGORY_INDEX[currentCategory] ?? 1) * 32;
+  applyMarkerImage(left, markerId);
+  applyMarkerImage(right, markerId);
+}
 
 function formatPrice(value) {
   return `${value.toLocaleString()}원`;
@@ -130,6 +187,8 @@ function showScreen(screenId) {
   } else {
     stopPaymentCompleteCountdown();
   }
+
+  updateBottomMarkers();
 }
 
 function openHomeConfirmModal() {
@@ -142,6 +201,7 @@ function closeHomeConfirmModal() {
 
 function confirmGoHome() {
   cart = [];
+  lastCartCommonRefId = null;
   dineType = null;
   closeModal();
   closeHomeConfirmModal();
@@ -167,6 +227,7 @@ function setupCategoryButtons() {
 
       currentCategory = button.dataset.category;
       renderMenus();
+      updateBottomMarkers();
     });
   });
 }
@@ -205,11 +266,13 @@ function openModal(menu) {
 
   renderOptionButtons();
   document.getElementById("option-modal").classList.remove("hidden");
+  updateBottomMarkers();
 }
 
 function closeModal() {
   document.getElementById("option-modal").classList.add("hidden");
   selectedMenu = null;
+  updateBottomMarkers();
 }
 
 function areModalOptionsComplete() {
@@ -262,6 +325,7 @@ function renderOptionButtons() {
   );
 
   updateAddToCartButton();
+  updateBottomMarkers();
 }
 
 function createOptionGroup(containerId, options, selected, onClick, disabled = false) {
@@ -303,6 +367,7 @@ function addToCart() {
       ice: selectedOptions.temp === "ICED" ? selectedOptions.ice : ""
     });
   }
+  lastCartCommonRefId = Math.max(0, selectedMenu.id - 1);
 
   closeModal();
   renderOrderSummary();
@@ -322,7 +387,9 @@ function renderOrderSummary() {
   payButton.disabled = totalCount === 0;
 
   if (cart.length === 0) {
+    lastCartCommonRefId = null;
     cartListEl.innerHTML = `<div class="cart-empty">담은 메뉴가 없습니다</div>`;
+    updateBottomMarkers();
     return;
   }
 
@@ -358,6 +425,7 @@ function renderOrderSummary() {
 
     cartListEl.appendChild(itemEl);
   });
+  updateBottomMarkers();
 }
 
 function changeQuantity(itemId, delta) {
@@ -432,6 +500,7 @@ function completePayment() {
 function finishDemoPaymentToHome() {
   stopPaymentCompleteCountdown();
   cart = [];
+  lastCartCommonRefId = null;
   dineType = null;
   renderOrderSummary();
   showScreen("screen-home");
@@ -439,6 +508,7 @@ function finishDemoPaymentToHome() {
 setupCategoryButtons();
 renderMenus();
 renderOrderSummary();
+updateBottomMarkers();
 
 /** 터치/펜에서 :active 가 약할 때 눌림 모션 유지 (Pointer Events + touch, 종료는 window 캡처) */
 (function setupTouchPressFeedback() {

@@ -8,7 +8,14 @@
 </head>
 <body>
   <div class="app">
-    <div class="device-frame on-home-screen">
+    <div class="corner-markers" aria-hidden="true">
+      <span class="corner-marker corner-marker--tl"></span>
+      <span class="corner-marker corner-marker--tr"></span>
+      <span class="corner-marker corner-marker--bl"></span>
+      <span class="corner-marker corner-marker--br"></span>
+    </div>
+    <div class="device-shell">
+      <div class="device-frame on-home-screen">
       <header class="topbar">
         <div class="brand">ERICA COFFEE</div>
         <button type="button" class="topbar-home-btn" onclick="openHomeConfirmModal()" aria-label="첫 화면으로 이동">
@@ -148,6 +155,7 @@
           </p>
         </div>
       </section>
+      </div>
     </div>
   </div>
 
