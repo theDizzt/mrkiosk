@@ -36,7 +36,7 @@ public class FSMMetaPathEngine : MonoBehaviour
     public void SetupMetaPath(int menuID)
     {
         targetCartItemID = Mathf.Clamp(menuID, 0, 29);
-        targetCategory = targetCartItemID / 6;  
+        targetCategory = (targetCartItemID / 6) + 1;  
         targetMenuHash = targetCartItemID % 6;  
         
         // 재진입 시 FSM 내부 상태 완벽 초기화
@@ -87,8 +87,8 @@ public class FSMMetaPathEngine : MonoBehaviour
 
         int currentCategory = (entity >> 5) & 0x07;
 
-        // 유효 범위(0~4)를 벗어난 노이즈 데이터 필터링
-        if (currentCategory > 4) return;
+        // 유효 범위(1~5)를 벗어난 노이즈 데이터 필터링
+        if (currentCategory > 5) return;
 
         if (currentCategory != targetCategory)
         {
