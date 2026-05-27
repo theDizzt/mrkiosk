@@ -74,13 +74,13 @@ button {
 .corner-marker--tl {
   top: 20px;
   left: 20px;
-  background: url('markers/marker_0.png') center / 100% 100% no-repeat;
+  background: url('markers/marker_769.png') center / 100% 100% no-repeat;
 }
 
 .corner-marker--tr {
   top: 20px;
   right: 20px;
-  background: url('markers/marker_0.png') center / 100% 100% no-repeat;
+  background: url('markers/marker_769.png') center / 100% 100% no-repeat;
 }
 
 .corner-marker--bl {
