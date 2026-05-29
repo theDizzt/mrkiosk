@@ -1,27 +1,19 @@
-
 import json
 from pathlib import Path
 
 from config import STATE_MAP
 
-# 정상 주문 흐름
-# HCI 평가 연계:
-# 시니어 사용자의 주문 과업을 단계별 FSM 흐름으로 정의.
-# 각 단계의 진입/이탈 시간은 과업 수행 시간과 실패 구간 분석에 사용.
+# 정상 주문 흐름 (HCI 평가 연계)
+# LISTENING 단계를 완벽히 제외하고 실제 유저 터치 진도에 맞춘 직렬 구조로 개편.
 ROUTE = [
     "IDLE",
-    "LISTENING",
     "CATEGORY_SELECT",
     "ITEM_SELECT",
-    "OPTION_SELECT",
     "PAYMENT_SELECT",
     "CONFIRM"
 ]
 
 # 오류/예외 상태
-# HCI 평가 연계:
-# 사용자가 길을 잃거나 시스템이 잘못된 상태를 감지했을 때 복구 가이드를 제공하기 위한 상태.
-# 사후 분석 시 오류 발생 빈도와 복구 성공 여부 평가.
 ERROR_STATES = {
     "ERROR_RECOVERY",
     "FAIL_SAFE",
@@ -37,26 +29,21 @@ class MarkerFSM:
         self.states_data = self._load_states(states_file)
 
     def _load_states(self, states_file: str):
+        # 최상위 경로 및 vision/ 하위 경로 모두 대응할 수 있도록 처리
         path = Path(states_file)
-
         if not path.exists():
-            raise FileNotFoundError(f"State file not found: {states_file}")
+            path = Path("vision") / states_file
+            
+        if not path.exists():
+            # states.json 파일이 없을 때 에러로 죽지 않도록 빈 딕셔너리 예외 처리
+            print(f"[WARN] States file not found: {states_file}. Using layout fallbacks.")
+            return {}
 
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    # HCI 평가 연계:
-    # 비정상적인 마커 인식이나 사용자의 예외 행동으로 인해 잘못된 단계로 이동하지 않도록 제한.
-    # 이는 과업 성공률과 오류 회복성 평가에 영향.
     def is_valid_transition(self, current_state: str, new_state: str) -> bool:
-
         # 정상 Route 기준으로 상태 전이가 가능한지 검사
-        # 허용
-        # 1) 같은 상태 유지
-        # 2) 바로 다음 상태
-        # 3) 바로 이전 상태
-        # 4) 오류 상태로 진입
-
         if new_state in ERROR_STATES:
             return True
 
@@ -70,6 +57,7 @@ class MarkerFSM:
         current_idx = ROUTE.index(current_state)
         new_idx = ROUTE.index(new_state)
 
+        # 바로 다음 단계(+1), 이전 단계(-1), 또는 현재 단계 유지만 정상으로 판정
         return (
             new_idx == current_idx or
             new_idx == current_idx + 1 or
@@ -77,17 +65,19 @@ class MarkerFSM:
         )
 
     def update_by_marker_id(self, marker_id: int) -> bool:
-        # 2x5 상태 마커 ID를 입력받아 FSM 상태를 갱신
-        # 반환값
-        # True: 상태 변경 발생
-        # False: 상태 유지 또는 무시
+        # 아루코 마커 ID를 정수형으로 확실하게 형변환 안전장치 추가
+        try:
+            m_id = int(marker_id)
+        except (TypeError, ValueError):
+            print(f"[WARN] Invalid marker_id type: {marker_id}")
+            return self.force_error_recovery(reason="invalid_marker_id_type")
 
-        new_state = STATE_MAP.get(marker_id)
+        new_state = STATE_MAP.get(m_id)
 
-        # STATE_MAP에 없는 ID는 무시하지 않고 ERROR_RECOVERY로 보냄
+        # STATE_MAP에 없는 ID는 ERROR_RECOVERY로 전송
         if new_state is None:
-            print(f"[WARN] Unknown marker ID: {marker_id}")
-            return self.force_error_recovery(reason=f"unknown_marker_id:{marker_id}")
+            print(f"[WARN] Unknown marker ID: {m_id}")
+            return self.force_error_recovery(reason=f"unknown_marker_id:{m_id}")
 
         # 같은 상태면 변경 없음
         if new_state == self.current_state:
@@ -95,6 +85,7 @@ class MarkerFSM:
 
         # 정상 전이 검사
         if self.is_valid_transition(self.current_state, new_state):
+            print(f"[FSM 이동 성공] {self.current_state} -> {new_state} (마커: {m_id})")
             self.previous_state = self.current_state
 
             if self.current_state not in ERROR_STATES:
@@ -108,14 +99,12 @@ class MarkerFSM:
             return True
 
         # 잘못된 전이 감지
-        print(f"[WARN] Invalid transition: {self.current_state} -> {new_state}")
+        print(f"[WARN] Invalid transition guard triggered: {self.current_state} -> {new_state} (마커: {m_id})")
         return self.force_error_recovery(
             reason=f"invalid_transition:{self.current_state}->{new_state}"
         )
 
     def force_error_recovery(self, reason: str = "") -> bool:
-        # 강제로 ERROR_RECOVERY 상태로 전환
-
         if self.current_state == "ERROR_RECOVERY":
             return False
 
@@ -132,8 +121,6 @@ class MarkerFSM:
         return True
 
     def recover_to_last_valid_state(self) -> bool:
-        # 마지막 정상 상태로 복귀한다.
-
         if self.current_state != "ERROR_RECOVERY":
             return False
 
@@ -144,11 +131,11 @@ class MarkerFSM:
         return True
 
     def reset(self):
-        # FSM 초기화
-
         self.previous_state = self.current_state
         self.current_state = "IDLE"
         self.last_valid_state = "IDLE"
+
+    public_state = property(lambda self: self.current_state)
 
     def get_current_state(self):
         return self.current_state
@@ -160,9 +147,6 @@ class MarkerFSM:
         return self.last_valid_state
 
     def get_state_payload(self):
-        # 현재 상태의 payload를 반환한다.
-        # ERROR_RECOVERY payload가 states.json에 없으면 기본값 제공.
-
         if self.current_state in self.states_data:
             return self.states_data[self.current_state]
 

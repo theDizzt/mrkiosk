@@ -1,32 +1,34 @@
 {
-  "timestamp": "2026-05-28T12:58:08.807643",
-  "state": "LISTENING",
-  "marker_id": 1,
+  "timestamp": "2026-05-29T17:58:34.427330",
+  "state": "PAYMENT_SELECT",
+  "marker_id": 568,
   "rvec": [
-    3.2930852778365476,
-    -0.5395560420551896,
-    -0.2647684692488844
+    2.4836911979602125,
+    -0.2806498643950987,
+    0.3241856575990101
   ],
   "tvec": [
-    0.1148606055076077,
-    0.029070992175689085,
-    0.36375903936873194
+    -0.11457068235402545,
+    -0.022772927497558406,
+    1.9304414648745376
   ],
   "payload": {
-    "screen": "listening",
+    "screen": "unknown",
     "target_button": null,
     "local_position": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "message": "Listening for voice input",
-    "kiosk_phase": "Phase_00",
-    "kiosk_details": {},
+    "message": "Unknown state",
+    "kiosk_phase": "Phase_10",
+    "kiosk_details": {
+      "common_reference_id": 14
+    },
     "world_position": {
-      "x": 0.1148606055076077,
-      "y": 0.029070992175689085,
-      "z": 0.36375903936873194
+      "x": -0.08943703537105707,
+      "y": -0.022126171826155092,
+      "z": 1.964144428872364
     }
   }
 }

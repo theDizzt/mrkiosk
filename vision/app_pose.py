@@ -1,4 +1,3 @@
-# app_pose.py (DICT_4X4_50 규격 동기화 완료 최종본)
 import cv2
 import numpy as np
 from pathlib import Path
@@ -6,7 +5,7 @@ import json
 from datetime import datetime
 from collections import deque, Counter
 import threading
-import pyttsx3 # 초고속 윈도우 내장 TTS
+import pyttsx3 # Windows SAPI5 TTS Engine
 from config import STATE_MAP
 
 from config import (
@@ -19,11 +18,10 @@ from config import (
 
 from marker_fsm import MarkerFSM
 
-# ====================================================================
-#   📢 [HCI 명세 주입] 아루코 ID 비트 역산(디코딩) 함수 정의
-# ====================================================================
 def decode_aruco_id(marker_id):
-    """최종 가이드라인 규칙에 의거하여 아루코 ID로부터 키오스크 상태 분석"""
+    """
+    최종 가이드라인 규칙에 의거하여 아루코 ID로부터 키오스크 상태 분석
+    """
     result = {"phase": "UNKNOWN", "details": {}}
     
     if 0 <= marker_id <= 160:
@@ -60,24 +58,25 @@ def decode_aruco_id(marker_id):
         
     return result
 
-# ====================================================================
-#   🔊 [HCI 명세 주입] 프레임 드랍이 없는 초고속 논블로킹 발화 엔진
-# ====================================================================
 def _speak_worker(text):
+    """
+    백그라운드 스레드에서 SAPI5 엔진을 구동하여 TTS 음성을 출력하는 함수
+    """
     try:
         engine = pyttsx3.init()
-        engine.setProperty('rate', 150) # 시니어 케어용 안정적 발화 속도
+        engine.setProperty('rate', 150) # 고령층 피실험자를 배려한 발화 속도 저하
         engine.say(text)
         engine.runAndWait()
     except Exception as e:
-        print(f"TTS 발화 실패: {e}")
+        print(f"TTS Speech Failed: {e}")
 
 def speak(text):
-    print(f"🔊 [AI 가이드 성우]: \"{text}\"")
+    """
+    비전 연산 메인 루프 프레임 저하 방지를 위한 비동기 발화 인터페이스
+    """
+    print(f"TTS Active User Guide: \"{text}\"")
     threading.Thread(target=_speak_worker, args=(text,), daemon=True).start()
 
-
-# 구형 단순 로그 적재 함수 보존
 def log_event(state, marker_id, tvec=None):
     log = {
         "timestamp": datetime.now().isoformat(),
@@ -89,7 +88,6 @@ def log_event(state, marker_id, tvec=None):
         log["tvec"] = tvec.flatten().tolist()
     with open("log.json", "a", encoding="utf-8") as f:
         f.write(json.dumps(log, ensure_ascii=False) + "\n")
-
 
 class StableStateDecoder:
     def __init__(self, window_size=7, min_count=4):
@@ -105,7 +103,6 @@ class StableStateDecoder:
         if count >= self.min_count:
             return most_common_id
         return None
-
 
 class PositionFilter:
     def __init__(self, alpha=0.35, threshold=0.08, max_hold=5):
@@ -139,14 +136,12 @@ class PositionFilter:
         self.prev = smoothed
         return smoothed
 
-
 def load_calibration():
     camera_matrix_path = Path(CAMERA_MATRIX_FILE)
     dist_coeffs_path = Path(DIST_COEFFS_FILE)
     if camera_matrix_path.exists() and dist_coeffs_path.exists():
         return np.load(str(camera_matrix_path)), np.load(str(dist_coeffs_path))
     return None, None
-
 
 def create_fallback_calibration(frame_width, frame_height):
     focal_length = frame_width
@@ -155,13 +150,10 @@ def create_fallback_calibration(frame_width, frame_height):
     dist_coeffs = np.zeros((5, 1), dtype=np.float32)
     return camera_matrix, dist_coeffs
 
-
 def create_aruco_detector():
-    # 🎯 카메라 인식 사전도 생성기와 똑같이 1000 규격으로 일치
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_1000)
     parameters = cv2.aruco.DetectorParameters()
     return cv2.aruco.ArucoDetector(aruco_dict, parameters)
-
 
 def append_log_event(state, marker_id, rvec=None, tvec=None, payload=None):
     log = {"timestamp": datetime.now().isoformat(), "state": state, "marker_id": int(marker_id), "event": "state_enter"}
@@ -179,13 +171,11 @@ def append_log_event(state, marker_id, rvec=None, tvec=None, payload=None):
     with open("log.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(log, ensure_ascii=False) + "\n")
 
-
 def local_to_camera_world(rvec, tvec, local_position):
     R, _ = cv2.Rodrigues(rvec)
     p_local = np.array([[float(local_position.get("x", 0.0))], [float(local_position.get("y", 0.0))], [float(local_position.get("z", 0.0))]], dtype=np.float32)
     p_world = R @ p_local + tvec.reshape(3, 1)
     return {"x": float(p_world[0][0]), "y": float(p_world[1][0]), "z": float(p_world[2][0])}
-
 
 def write_runtime_state(state, marker_id, rvec=None, tvec=None, payload=None):
     runtime_data = {"timestamp": datetime.now().isoformat(), "state": state, "marker_id": int(marker_id)}
@@ -198,11 +188,9 @@ def write_runtime_state(state, marker_id, rvec=None, tvec=None, payload=None):
     with open("runtime_state.json", "w", encoding="utf-8") as f:
         json.dump(runtime_data, f, ensure_ascii=False, indent=2)
 
-
 def format_pose_text(tvec):
     x, y, z = tvec.flatten()
     return f"Pose tvec(m): x={x:.3f}, y={y:.3f}, z={z:.3f}"
-
 
 def draw_state_info(frame, state_name, payload, pose_text=None, state_marker_id=None):
     y = 30
@@ -221,6 +209,21 @@ def draw_state_info(frame, state_name, payload, pose_text=None, state_marker_id=
         y += 35
         cv2.putText(frame, pose_text, (20, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 165, 255), 2)
 
+def estimate_pose_modern(corners, marker_length, camera_matrix, dist_coeffs):
+    """
+    OpenCV 4.7+ 버전용 estimatePoseSingleMarkers 대체 구동 구현 함수
+    """
+    obj_points = np.array([
+        [-marker_length / 2,  marker_length / 2, 0],
+        [ marker_length / 2,  marker_length / 2, 0],
+        [ marker_length / 2, -marker_length / 2, 0],
+        [-marker_length / 2, -marker_length / 2, 0]
+    ], dtype=np.float32)
+    
+    valid, rvec, tvec = cv2.solvePnP(obj_points, corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
+    if valid:
+        return rvec.reshape(1, 3), tvec.reshape(1, 3)
+    return None, None
 
 def main():
     cap = cv2.VideoCapture(CAMERA_INDEX)
@@ -229,10 +232,10 @@ def main():
         return
 
     aruco_detector = create_aruco_detector()
-    fsm = MarkerFSM("vision/states.json") # 에러 로그 기반 vision/ 경로 고정 가드
+    fsm = MarkerFSM("vision/states.json")
     camera_matrix, dist_coeffs = load_calibration()
 
-    print("🚀 MR Kiosk 가이드라인 비전 가동 시작 (SAPI5 TTS 활성화 + DICT_4X4_50 완벽 매칭)")
+    print("MR Kiosk Guideline Vision Engine Started (SAPI5 TTS Active + DICT_4X4_1000 Sync)")
     last_state_marker_id = None
     position_filter = PositionFilter()
     stable_decoder = StableStateDecoder()
@@ -250,7 +253,6 @@ def main():
         rvec, tvec = None, None
         detected_state_id = None
 
-        # 🎯 등록된 DICT_4X4_50 딕셔너리로 마커 감지 트랙 온
         aruco_corners, aruco_ids, _ = aruco_detector.detectMarkers(frame)
 
         if aruco_ids is not None:
@@ -259,29 +261,36 @@ def main():
             for i, aruco_id in enumerate(aruco_ids.flatten()):
                 current_id = int(aruco_id)
                 
-                rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers([aruco_corners[i]], MARKER_LENGTH, camera_matrix, dist_coeffs)
-                current_rvec, current_tvec = rvecs[0], tvecs[0]
-                cv2.drawFrameAxes(frame, camera_matrix, dist_coeffs, current_rvec, current_tvec, 0.02)
+                # 최신 OpenCV 버전 대응용 포즈 연산 우회 호출
+                current_rvec, current_tvec = estimate_pose_modern(aruco_corners[i][0], MARKER_LENGTH, camera_matrix, dist_coeffs)
                 
-                # [A] 고정 마커 필터링 (ID 0) -> 키오스크의 공간 6DoF 정합 기준점으로 락 고정
-                if current_id == REFERENCE_ARUCO_ID:
-                    rvec, tvec = current_rvec, current_tvec
-                    pose_text = format_pose_text(tvec)
-                
-                # [B] 동적 가변 마커 필터링 (0번 외 나머지) -> 가이드라인 상태 ID로 입력 유도
-                else:
-                    stable_id = stable_decoder.update(current_id)
-                    if stable_id is not None:
-                        detected_state_id = stable_id
+                if current_rvec is not None and current_tvec is not None:
+                    cv2.drawFrameAxes(frame, camera_matrix, dist_coeffs, current_rvec, current_tvec, 0.02)
+                    
+                    # 0번 고정 마커: 키오스크 기준 좌표계 획득
+                    if current_id == REFERENCE_ARUCO_ID:
+                        rvec, tvec = current_rvec, current_tvec
+                        pose_text = format_pose_text(tvec)
+                    
+                    # 가변 마커: 과업 상태 전이 트리거
+
+                    else:
+                        # 0번 고정 마커가 인식되어 tvec(기준 좌표)이 먼저 확보된 경우에만 상태 마커를 연산함
+                        if tvec is not None: 
+                            stable_id = stable_decoder.update(current_id)
+                            if stable_id is not None:
+                                detected_state_id = stable_id       
 
             if tvec is None and len(aruco_corners) > 0:
-                rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers([aruco_corners[0]], MARKER_LENGTH, camera_matrix, dist_coeffs)
-                rvec, tvec = rvecs[0], tvecs[0]
-                pose_text = format_pose_text(tvec)
+                current_rvec, current_tvec = estimate_pose_modern(aruco_corners[0][0], MARKER_LENGTH, camera_matrix, dist_coeffs)
+                if current_rvec is not None and current_tvec is not None:
+                    rvec, tvec = current_rvec, current_tvec
+                    pose_text = format_pose_text(tvec)
         else:
             pose_text = "No ArUco Marker Detected"
 
-        # 3. 비트 해독 결합 및 트랜잭션 + 고속 발화 처리
+        # FSM 트랜잭션 수립 및 비동기 발화 구역
+
         if detected_state_id is not None:
             last_state_marker_id = detected_state_id
 
@@ -292,30 +301,32 @@ def main():
                     payload = dict(fsm.get_state_payload())
                     current_state_name = fsm.get_current_state()
 
-                    # 💡 아루코 ID 암호 해체 및 페이로드 추가 주입
                     kiosk_info = decode_aruco_id(detected_state_id)
                     payload["kiosk_phase"] = kiosk_info["phase"]
                     payload["kiosk_details"] = kiosk_info["details"]
 
-                    # 🔊 [HCI 레이어] 상태 최초 진입 시 컴퓨터 오디오 즉시 발화 지시
-                    if current_state_name == "PHASE_00_START":
+                    # -----------------------------------------------------------
+                    # 최적화된 가이드라인 TTS 발화 설계
+                    # -----------------------------------------------------------
+                    if current_state_name == "IDLE":
                         speak("원하시는 주문 방식을 선택해 주세요.")
-                    elif "PHASE_00_CAT" in current_state_name:
+                    elif current_state_name == "CATEGORY_SELECT":
                         speak("원하시는 음료 종류를 터치해 주세요.")
-                    elif current_state_name == "PHASE_01_OPTION_SELECT":
-                        speak("따뜻함 여부와 얼음, 설탕 조절 등 메뉴 옵션을 선택해 주세요.")
-                    elif current_state_name == "PHASE_10_CART_VALIDATION":
+                    elif current_state_name == "ITEM_SELECT":
+                        speak("원하시는 상세 메뉴와 옵션을 선택하신 후 장바구니에 담아주세요.")
+                    elif current_state_name == "PAYMENT_SELECT":
                         speak("장바구니에 담긴 메뉴를 확인하신 후 결제 버튼을 눌러주세요.")
-                    elif current_state_name == "PHASE_11_PAYMENT":
+                    elif current_state_name == "CONFIRM":
                         speak("우측 하단 카드리더기에 신용카드를 끝까지 넣어주세요.")
+                    elif current_state_name == "ERROR_RECOVERY":
+                        speak("잘못된 입력이 감지되었습니다. 뒤로 가기 버튼을 눌러주세요.")
+                    # -----------------------------------------------------------
 
-                    # 공간 가이드 좌표 연산 및 필터링 안정화
                     local_position = payload.get("local_position", {"x": 0.0, "y": 0.0, "z": 0.0})
                     world_position = local_to_camera_world(rvec, tvec, local_position)
                     world_position = position_filter.update(world_position)
                     payload["world_position"] = world_position
 
-                    # 3대 파일 인프라 동시 적재 동기화 수립
                     append_log_event(current_state_name, detected_state_id, rvec, tvec, payload)
                     write_runtime_state(current_state_name, detected_state_id, rvec, tvec, payload)
                     log_event(current_state_name, detected_state_id, tvec)

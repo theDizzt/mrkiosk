@@ -3,54 +3,42 @@
     "screen": "idle",
     "target_button": null,
     "local_position": { "x": 0.0, "y": 0.0, "z": 0.0 },
-    "message": "Waiting for user"
-  },
-  "LISTENING": {
-    "screen": "listening",
-    "target_button": null,
-    "local_position": { "x": 0.0, "y": 0.0, "z": 0.0 },
-    "message": "Listening for voice input"
+    "message": "Waiting for user",
+    "transitions": ["CATEGORY_SELECT", "ERROR_RECOVERY"]
   },
   "CATEGORY_SELECT": {
     "screen": "category",
     "target_button": "coffee_category",
     "local_position": { "x": -0.12, "y": 0.06, "z": 0.0 },
-    "message": "Guide user to coffee category"
+    "message": "Guide user to category",
+    "transitions": ["ITEM_SELECT", "ERROR_RECOVERY"]
   },
   "ITEM_SELECT": {
     "screen": "menu",
     "target_button": "americano",
     "local_position": { "x": -0.04, "y": 0.03, "z": 0.0 },
-    "message": "Guide user to Americano menu"
-  },
-  "OPTION_SELECT": {
-    "screen": "option",
-    "target_button": "ice_option",
-    "local_position": { "x": 0.04, "y": 0.01, "z": 0.0 },
-    "message": "Guide user to ice option"
+    "message": "Guide user to specific menu and option popup",
+    "transitions": ["PAYMENT_SELECT", "ERROR_RECOVERY"]
   },
   "PAYMENT_SELECT": {
     "screen": "checkout",
     "target_button": "payment",
     "local_position": { "x": 0.12, "y": -0.06, "z": 0.0 },
-    "message": "Guide user to payment button"
+    "message": "Guide user to payment button",
+    "transitions": ["CONFIRM", "ERROR_RECOVERY"]
   },
   "CONFIRM": {
     "screen": "confirm",
     "target_button": "confirm",
     "local_position": { "x": 0.08, "y": -0.04, "z": 0.0 },
-    "message": "Order complete"
+    "message": "Order complete",
+    "transitions": ["IDLE"]
   },
   "ERROR_RECOVERY": {
     "screen": "recovery",
     "target_button": "back_button",
     "local_position": { "x": -0.15, "y": -0.08, "z": 0.0 },
-    "message": "Recover from wrong input"
-  },
-  "FAIL_SAFE": {
-    "screen": "failsafe",
-    "target_button": null,
-    "local_position": { "x": 0.0, "y": 0.0, "z": 0.0 },
-    "message": "LLM or voice help needed"
+    "message": "Recover from wrong input",
+    "transitions": ["IDLE", "CATEGORY_SELECT", "ITEM_SELECT", "PAYMENT_SELECT"]
   }
 }

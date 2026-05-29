@@ -1,56 +1,86 @@
 {
-  "IDLE": {
+  "PHASE_00_START": {
     "screen": "idle",
     "target_button": null,
     "local_position": { "x": 0.0, "y": 0.0, "z": 0.0 },
-    "message": "Waiting for user"
+    "message": "Waiting for user",
+    "transitions": ["PHASE_00_CAT_COFFEE", "PHASE_00_CAT_TEA", "PHASE_00_CAT_ADE", "PHASE_00_CAT_BEV", "PHASE_00_CAT_BLEND", "ERROR_RECOVERY"]
+  },
+  "PHASE_00_CAT_COFFEE": {
+    "screen": "category",
+    "target_button": "coffee_tab",
+    "local_position": { "x": -0.12, "y": 0.06, "z": 0.0 },
+    "message": "Guide to Coffee",
+    "transitions": ["PHASE_01_OPTION_SELECT", "PHASE_00_START", "ERROR_RECOVERY"]
+  },
+  "PHASE_00_CAT_TEA": {
+    "screen": "category",
+    "target_button": "tea_tab",
+    "local_position": { "x": -0.06, "y": 0.06, "z": 0.0 },
+    "message": "Guide to Tea",
+    "transitions": ["PHASE_01_OPTION_SELECT", "PHASE_00_START", "ERROR_RECOVERY"]
+  },
+  "PHASE_00_CAT_ADE": {
+    "screen": "category",
+    "target_button": "ade_tab",
+    "local_position": { "x": 0.0, "y": 0.06, "z": 0.0 },
+    "message": "Guide to Ade/Juice",
+    "transitions": ["PHASE_01_OPTION_SELECT", "PHASE_00_START", "ERROR_RECOVERY"]
+  },
+  "PHASE_00_CAT_BEV": {
+    "screen": "category",
+    "target_button": "bev_tab",
+    "local_position": { "x": 0.06, "y": 0.06, "z": 0.0 },
+    "message": "Guide to Beverage",
+    "transitions": ["PHASE_01_OPTION_SELECT", "PHASE_00_START", "ERROR_RECOVERY"]
+  },
+  "PHASE_00_CAT_BLEND": {
+    "screen": "category",
+    "target_button": "blended_tab",
+    "local_position": { "x": 0.12, "y": 0.06, "z": 0.0 },
+    "message": "Guide to Blended",
+    "transitions": ["PHASE_01_OPTION_SELECT", "PHASE_00_START", "ERROR_RECOVERY"]
+  },
+  "PHASE_01_OPTION_SELECT": {
+    "screen": "option",
+    "target_button": "confirm_option",
+    "local_position": { "x": 0.04, "y": 0.01, "z": 0.0 },
+    "message": "Guide user to options",
+    "transitions": ["PHASE_10_CART_VALIDATION", "PHASE_00_START", "ERROR_RECOVERY"]
+  },
+  "PHASE_10_CART_VALIDATION": {
+    "screen": "checkout",
+    "target_button": "payment_btn",
+    "local_position": { "x": 0.12, "y": -0.06, "z": 0.0 },
+    "message": "Guide user to cart verification",
+    "transitions": ["PHASE_11_PAYMENT", "PHASE_00_START", "ERROR_RECOVERY"]
+  },
+  "PHASE_11_PAYMENT": {
+    "screen": "confirm",
+    "target_button": "ic_reader",
+    "local_position": { "x": 0.08, "y": -0.04, "z": 0.0 },
+    "message": "Order complete / Payment pending",
+    "transitions": ["PHASE_00_START", "ERROR_RECOVERY"]
   },
   "LISTENING": {
     "screen": "listening",
     "target_button": null,
     "local_position": { "x": 0.0, "y": 0.0, "z": 0.0 },
-    "message": "Listening for voice input"
-  },
-  "CATEGORY_SELECT": {
-    "screen": "category",
-    "target_button": "coffee_category",
-    "local_position": { "x": -0.12, "y": 0.06, "z": 0.0 },
-    "message": "Guide user to coffee category"
-  },
-  "ITEM_SELECT": {
-    "screen": "menu",
-    "target_button": "americano",
-    "local_position": { "x": -0.04, "y": 0.03, "z": 0.0 },
-    "message": "Guide user to Americano menu"
-  },
-  "OPTION_SELECT": {
-    "screen": "option",
-    "target_button": "ice_option",
-    "local_position": { "x": 0.04, "y": 0.01, "z": 0.0 },
-    "message": "Guide user to ice option"
-  },
-  "PAYMENT_SELECT": {
-    "screen": "checkout",
-    "target_button": "payment",
-    "local_position": { "x": 0.12, "y": -0.06, "z": 0.0 },
-    "message": "Guide user to payment button"
-  },
-  "CONFIRM": {
-    "screen": "confirm",
-    "target_button": "confirm",
-    "local_position": { "x": 0.08, "y": -0.04, "z": 0.0 },
-    "message": "Order complete"
+    "message": "Listening for voice input",
+    "transitions": ["PHASE_00_START", "ERROR_RECOVERY"]
   },
   "ERROR_RECOVERY": {
     "screen": "recovery",
     "target_button": "back_button",
     "local_position": { "x": -0.15, "y": -0.08, "z": 0.0 },
-    "message": "Recover from wrong input"
+    "message": "Recover from wrong input",
+    "transitions": ["PHASE_00_START", "PHASE_00_CAT_COFFEE", "PHASE_00_CAT_TEA", "PHASE_00_CAT_ADE", "PHASE_00_CAT_BEV", "PHASE_00_CAT_BLEND", "PHASE_01_OPTION_SELECT", "PHASE_10_CART_VALIDATION", "PHASE_11_PAYMENT"]
   },
   "FAIL_SAFE": {
     "screen": "failsafe",
     "target_button": null,
     "local_position": { "x": 0.0, "y": 0.0, "z": 0.0 },
-    "message": "LLM or voice help needed"
+    "message": "LLM help needed",
+    "transitions": ["PHASE_00_START"]
   }
 }
