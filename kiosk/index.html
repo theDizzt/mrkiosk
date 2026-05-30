@@ -9,6 +9,21 @@
 <body>
   <div class="app">
     <div class="device-frame">
+
+      <img
+        id="pose-marker"
+        class="kiosk-marker pose-marker"
+        src="kiosk_aruco_markers/aruco_id_769.png"
+        alt="position marker"
+      />
+
+      <img
+        id="state-marker"
+        class="kiosk-marker state-marker"
+        src="kiosk_aruco_markers/aruco_id_0.png"
+        alt="state marker"
+      />
+
       <header class="topbar">
         <div class="brand">ERICA COFFEE</div>
       </header>
@@ -114,6 +129,11 @@
         </div>
       </section>
     </div>
+
+    <div id="marker-id-debug" class="marker-id-debug">
+      Current ID: 0000
+    </div>
+
   </div>
 
   <!-- 옵션 모달 -->

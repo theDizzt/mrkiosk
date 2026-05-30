@@ -36,6 +36,7 @@ button {
 }
 
 .device-frame {
+  position: relative;
   width: 1024px;
   height: 720px;
   background: var(--surface);
@@ -56,6 +57,7 @@ button {
   font-size: 30px;
   font-weight: 900;
   color: var(--text-dark);
+  margin-left: 72px;
 }
 
 .screen {
@@ -549,4 +551,41 @@ button {
   border-radius: 999px;
   font-size: 18px;
   font-weight: 700;
+}
+
+.kiosk-marker {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  background: #ffffff;
+  border: 4px solid #000000;
+  object-fit: contain;
+  z-index: 9999;
+}
+
+.pose-marker {
+  top: 4px;
+  left: 4px;
+}
+
+.state-marker {
+  right: 4px;
+  bottom: 4px;
+}
+
+.marker-id-debug {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+
+  padding: 10px 16px;
+  background: #222;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  border-radius: 10px;
+  text-align: center;
+
+  z-index: 100000;
+  pointer-events: none;
 }
