@@ -4,220 +4,241 @@ using UnityEngine;
 
 public class RuntimeStateReader : MonoBehaviour
 {
-    // 읽는 속도 향상을 위해 임시로 절대 경로로 지정
-    [Header("JSON file path")]
-    public string jsonFilePath = "C:/Users/eorhk/OneDrive/문서/GitHub/mrkiosk/vision/runtime_state.json";
+    [Header("Runtime JSON Settings")]
+    [Tooltip("체크하면 Unity 프로젝트 루트 기준으로 vision/runtime_state.json을 읽습니다.")]
+    public bool useProjectRelativePath = true;
 
-    [Header("Object to move")]
-    public Transform guideObject;
+    [Tooltip("useProjectRelativePath가 true일 때 사용할 상대 경로입니다.")]
+    public string relativeJsonPath = "vision/runtime_state.json";
 
-    [Header("Scale for converting Python meters to Unity world")]
-    public float positionScale = 1.0f;
+    [Tooltip("useProjectRelativePath가 false일 때 사용할 절대 경로입니다.")]
+    public string absoluteJsonPath = "C:/Users/eorhk/OneDrive/문서/GitHub/mrkiosk/vision/runtime_state.json";
 
-    // HCI 평가 연계:
-    // 사용자 행동 후 다음 가이드가 표시되기까지의 지연 시간을 0.1초 이내로 유지하기 위해 runtime_state.json을 0.1초 주기로 확인.  
-    [Header("Polling interval (seconds)")]
-    public float updateInterval = 0.1f;
+    [Header("Read Settings")]
+    public float readInterval = 0.1f;
 
-    [Header("Smooth movement")]
-    public float moveLerpSpeed = 0.4f;
+    public RuntimeStateData CurrentState { get; private set; }
 
     private float timer = 0f;
-    private string lastTimestamp = "";
+    private string resolvedJsonPath;
 
-    // 색상 변경용 Renderer 참조
-    private Renderer guideRenderer;
-
-    // 목표 위치를 저장해서 Lerp 이동에 사용
-    private Vector3 targetPosition;
-
-    [Serializable]
-    public class RuntimeState
+    private void Start()
     {
-        public string timestamp;
-        public string state;
-        public int marker_id;
-        public float[] rvec;
-        public float[] tvec;
-        public Payload payload;
+        resolvedJsonPath = ResolveJsonPath();
+        Debug.Log("[RuntimeStateReader] JSON Path: " + resolvedJsonPath);
     }
 
-    [Serializable]
-    public class Payload
+    private void Update()
     {
-        public string screen;
-        public string target_button;
-        public Position position;
-        public Offset offset_from_marker;
-        public string message;
-    }
-
-    [Serializable]
-    public class Position
-    {
-        public float x;
-        public float y;
-    }
-
-    [Serializable]
-    public class Offset
-    {
-        public float x;
-        public float y;
-        public float z;
-    }
-
-    void Start()
-    {
-        // 자동으로 프로젝트 폴더(mrkiosk) 바로 아래의 runtime_state.json 확인.
-        jsonFilePath = Path.Combine(Application.dataPath, "../runtime_state.json");
-
-        if (guideObject != null)
-        {
-            guideRenderer = guideObject.GetComponent<Renderer>();
-            targetPosition = guideObject.position;
-        }
-}
-
-    void Update()
-    {
-        // guideObject가 있으면 매 프레임 부드럽게 목표 위치로 이동
-        // HCI 평가 연계:
-        // 가이드 링이 갑자기 이동하면 시니어 사용자의 시선 추적과 위치 인지가 어려워질 수 있음.
-        // Lerp로 부드럽게 이동시켜 시각적 부담을 줄임.
-        if (guideObject != null)
-        {
-            guideObject.position = Vector3.Lerp(
-                guideObject.position,
-                targetPosition,
-                moveLerpSpeed
-            );
-
-            // 평면 가이드처럼 보이도록 회전 고정
-            guideObject.rotation = Quaternion.Euler(90f, 0f, 0f);
-        }
-
         timer += Time.deltaTime;
 
-        if (timer < updateInterval)
-            return;
-
-        timer = 0f;
-        ReadAndApplyRuntimeState();
-    }
-
-    void ReadAndApplyRuntimeState()
-    {
-        if (guideObject == null)
+        if (timer < readInterval)
         {
-            Debug.LogWarning("Guide Object is not assigned.");
             return;
         }
 
-        if (!File.Exists(jsonFilePath))
+        timer = 0f;
+        ReadRuntimeState();
+    }
+
+    private string ResolveJsonPath()
+    {
+        if (!useProjectRelativePath)
         {
-            Debug.LogWarning("runtime_state.json not found: " + jsonFilePath);
+            return absoluteJsonPath;
+        }
+
+        // Application.dataPath = .../mrkiosk/Assets
+        // 프로젝트 루트 = .../mrkiosk
+        string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+        return Path.Combine(projectRoot, relativeJsonPath);
+    }
+
+    private void ReadRuntimeState()
+    {
+        if (!File.Exists(resolvedJsonPath))
+        {
+            Debug.LogWarning("[RuntimeStateReader] runtime_state.json not found: " + resolvedJsonPath);
             return;
         }
 
         try
         {
-            string json = File.ReadAllText(jsonFilePath);
-            RuntimeState data = JsonUtility.FromJson<RuntimeState>(json);
+            string json = File.ReadAllText(resolvedJsonPath);
 
-            if (data == null)
+            if (string.IsNullOrWhiteSpace(json))
             {
-                Debug.LogWarning("Failed to parse runtime_state.json");
+                Debug.LogWarning("[RuntimeStateReader] JSON file is empty.");
                 return;
             }
 
-            if (string.IsNullOrEmpty(data.timestamp))
+            CurrentState = JsonUtility.FromJson<RuntimeStateData>(json);
+
+            if (CurrentState == null)
             {
-                Debug.LogWarning("timestamp is empty in runtime_state.json");
+                Debug.LogWarning("[RuntimeStateReader] Failed to parse JSON.");
                 return;
             }
-
-            if (data.timestamp == lastTimestamp)
-            {
-                return;
-            }
-
-            // HCI 평가 연계:
-            // timestamp가 바뀐 경우에만 새 상태로 판단.
-            // Python 로그 timestamp와 Unity 적용 시점을 비교 -> 시스템 반응 속도를 측정.
-            lastTimestamp = data.timestamp;
-
-            Vector3 newPosition = ConvertPythonPoseToUnity(data);
-            
-            // 즉시 이동 대신 목표 위치만 갱신
-            targetPosition = newPosition;
-
-            // 상태별 색 반영
-            ApplyStateColor(data.state);
-
-            Debug.Log($"[RuntimeState] state={data.state}, marker_id={data.marker_id}, pos={newPosition}");
         }
         catch (Exception e)
         {
-            Debug.LogError("Error reading runtime_state.json: " + e.Message);
+            Debug.LogWarning("[RuntimeStateReader] Failed to read JSON: " + e.Message);
         }
     }
 
-    // HCI 평가 연계:
-    // Python/OpenCV에서 계산한 3D 위치를 Unity MR 공간에 맞게 변.
-    // 이 변환 정확도가 실제 버튼과 가이드 링 사이의 공간 정합 오차에 영향을 줌.
-    Vector3 ConvertPythonPoseToUnity(RuntimeState data)
+    public bool HasValidState()
     {
-        float x = 0f;
-        float y = 0f;
-        float z = 0f;
+        return CurrentState != null && CurrentState.valid;
+    }
 
-        // Python의 tvec를 기본 위치로 사용
-        if (data.tvec != null && data.tvec.Length >= 3)
+    public string GetFsmStateName()
+    {
+        if (CurrentState == null || CurrentState.fsm == null)
         {
-            x = data.tvec[0];
-            y = data.tvec[1];
-            z = data.tvec[2];
+            return "NO_DATA";
         }
 
-        // payload의 offset_from_marker가 있으면 추가 반영
-        if (data.payload != null && data.payload.offset_from_marker != null)
+        return CurrentState.fsm.state;
+    }
+
+    public int GetStateMarkerId()
+    {
+        if (CurrentState == null || CurrentState.state_marker == null)
         {
-            x += data.payload.offset_from_marker.x;
-            y += data.payload.offset_from_marker.y;
-            z += data.payload.offset_from_marker.z;
+            return -1;
         }
 
-        // OpenCV 카메라 좌표계를 Unity 좌표계로 단순 변환
-        // 필요하면 나중에 축 방향 맞춰서 수정
+        return CurrentState.state_marker.id;
+    }
+
+    public Vector2 GetTargetPosition()
+    {
+        if (
+            CurrentState == null ||
+            CurrentState.fsm == null ||
+            CurrentState.fsm.target == null
+        )
+        {
+            return Vector2.zero;
+        }
+
+        return new Vector2(CurrentState.fsm.target.x, CurrentState.fsm.target.y);
+    }
+
+    public Vector3 GetReferenceTvec()
+    {
+        if (
+            CurrentState == null ||
+            CurrentState.reference == null ||
+            CurrentState.reference.pose == null ||
+            CurrentState.reference.pose.tvec == null ||
+            CurrentState.reference.pose.tvec.Length < 3
+        )
+        {
+            return Vector3.zero;
+        }
+
         return new Vector3(
-            x * positionScale,
-            -y * positionScale,
-            z * positionScale
+            CurrentState.reference.pose.tvec[0],
+            CurrentState.reference.pose.tvec[1],
+            CurrentState.reference.pose.tvec[2]
         );
     }
 
-    // 상태별 색상 변경 함수
-    void ApplyStateColor(string state)
+    public Vector3 GetReferenceRvec()
     {
-        if (guideRenderer == null)
-            return;
-
-        Color targetColor = Color.white;
-
-        switch (state)
+        if (
+            CurrentState == null ||
+            CurrentState.reference == null ||
+            CurrentState.reference.pose == null ||
+            CurrentState.reference.pose.rvec == null ||
+            CurrentState.reference.pose.rvec.Length < 3
+        )
         {
-            case "IDLE": targetColor = Color.gray; break;
-            case "LISTENING": targetColor = Color.blue; break;
-            case "CATEGORY_SELECT": targetColor = Color.green; break; // MENU_GUIDE에서 변경
-            case "ITEM_SELECT": targetColor = Color.green; break;     // 추가
-            case "OPTION_SELECT": targetColor = Color.yellow; break;  // OPTION_GUIDE에서 변경
-            case "PAYMENT_SELECT": targetColor = Color.red; break;    // PAYMENT_GUIDE에서 변경
-            case "CONFIRM": targetColor = Color.cyan; break;
-            case "ERROR_RECOVERY": targetColor = new Color(1f, 0.5f, 0f); break;
-            case "FAIL_SAFE": targetColor = new Color(0.6f, 0.2f, 1f); break;
+            return Vector3.zero;
         }
 
-        guideRenderer.material.color = targetColor;
+        return new Vector3(
+            CurrentState.reference.pose.rvec[0],
+            CurrentState.reference.pose.rvec[1],
+            CurrentState.reference.pose.rvec[2]
+        );
     }
+
+    public bool HasTargetRect()
+    {
+        if (
+            CurrentState == null ||
+            CurrentState.fsm == null ||
+            CurrentState.fsm.target == null
+        )
+        {
+            return false;
+        }
+
+        return CurrentState.fsm.target.width > 0f &&
+            CurrentState.fsm.target.height > 0f;
+    }
+}
+
+[Serializable]
+public class RuntimeStateData
+{
+    public bool valid;
+    public double timestamp;
+    public TrackingData tracking;
+    public ReferenceData reference;
+    public StateMarkerData state_marker;
+    public FsmData fsm;
+}
+
+[Serializable]
+public class TrackingData
+{
+    public string reference_status;
+    public string state_status;
+    public int reference_missing_count;
+    public int state_missing_count;
+}
+
+[Serializable]
+public class ReferenceData
+{
+    public int id;
+    public bool detected;
+    public PoseData pose;
+}
+
+[Serializable]
+public class PoseData
+{
+    public float[] rvec;
+    public float[] tvec;
+    public float[] marker_center;
+    public float marker_area;
+}
+
+[Serializable]
+public class StateMarkerData
+{
+    public bool detected;
+    public int id;
+}
+
+[Serializable]
+public class FsmData
+{
+    public string state;
+    public string label;
+    public int state_id;
+    public TargetData target;
+}
+
+[Serializable]
+public class TargetData
+{
+    public float x;
+    public float y;
+    public float width;
+    public float height;
 }
