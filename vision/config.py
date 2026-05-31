@@ -8,12 +8,13 @@ STATE_MAP = {
     0: "IDLE",                  # 초기 매장/포장 선택 화면 (리셋 공통)
     32: "CATEGORY_SELECT",      # Coffee 탭 화면
     64: "CATEGORY_SELECT",      # Tea 탭 화면
-    96: "CATEGORY_SELECT",      # Ade/Juice 탭 화면 (청포도 에이드 등)
+    96: "CATEGORY_SELECT",      # Ade/Juice 탭 화면 (청포도 에이드 실험군)
     128: "CATEGORY_SELECT",     # Beverage 탭 화면
     160: "CATEGORY_SELECT",     # Blended 탭 화면
 
-    # Phase 11: 최종 결제 모듈 안내 (ID: 768 고정)
-    768: "CONFIRM",             # 결제 화면 전체 및 카드가이드 발화 지점
+    # Phase 11: 최종 결제 모듈 안내 (기획 수정 반영: 768 및 769 둘 다 CONFIRM 처리)
+    768: "CONFIRM",             # 기존 결제 화면 마커 가드
+    769: "CONFIRM",             # 좌측 상단 고정 Reference 마커 등록 (FSM 튕김 방지)
 
     # 시스템 강제 코드 가드 및 예외 처리
     800: "ERROR_RECOVERY",
@@ -21,30 +22,38 @@ STATE_MAP = {
 }
 
 # 2. Phase 01: 메뉴 상세 옵션 선택 구간 자동 등록 (ID: 256 ~ 447)
-# 각 MenuHash(0~5)와 선택 비트 조합(Temperature, Sugar, Ice)에 의해 생성되는 모든 ID를 ITEM_SELECT로 매핑
+# [교정] script.js와 동일한 3진법 연산 구조로 변경하여 홀수 ID까지 완벽 등록
 for menu_hash in range(6):
-    for temp in [0, 1, 2]:      # 미선택(0), ICED(1), HOT(2)
-        for sugar in [0, 1]:    # 미선택(0), 선택 완료(1)
-            for ice in [0, 1]:  # 미선택(0), 선택 완료(1)
-                # 명세서 공식: 256 + (MenuHash * 32) + (Temperature * 8) + (Sugar * 4) + (Ice * 2)
-                phase_01_id = 256 + (menu_hash * 32) + (temp * 8) + (sugar * 4) + (ice * 2)
+    for temp in [0, 1]:      # ICED(0), HOT(1)
+        for sugar in [0, 1, 2]:    # 덜 달게(0), 보통(1), 달게(2)
+            for ice in [0, 1, 2]:  # 얼음 많이(0), 얼음 보통(1), 얼음 적게(2)
+                # 웹페이지(script.js) 정식 공식 동기화 완료
+                option_code = (temp * 9) + (sugar * 3) + ice
+                phase_01_id = 256 + (menu_hash * 32) + option_code
                 STATE_MAP[phase_01_id] = "ITEM_SELECT"
 
 # 3. Phase 10: 장바구니 검증 구간 자동 등록 (ID: 512 ~ 628)
-# 공통 참조 메뉴 ID(0~29)에 따른 장바구니 화면 ID를 PAYMENT_SELECT로 매핑
 for menu_id in range(30):
-    # 명세서 공식: 512 + (공통 참조 ID * 4)
     phase_10_id = 512 + (menu_id * 4)
     STATE_MAP[phase_10_id] = "PAYMENT_SELECT"
 
 
 # ==============================================================================
-# 하드웨어 및 카메라 기본 셋팅 값
+# [HCI 평가 연계] 통신 없는 마커 ID 기반 가이드 링 미터(m) 단위 상대 좌표 설정
 # ==============================================================================
-REFERENCE_ARUCO_ID = 0          # 좌측 상단 고정 reference 마커 번호
-CAMERA_INDEX = 0                # 웹캠 인덱스
-MARKER_LENGTH = 0.05            # 마커 실제 물리 크기 (5cm)
+RING_COORDINATE_MAP = {
+    32:  {"x": -0.15, "y": 0.08, "z": 0.0},  # Coffee 탭 위치
+    64:  {"x": -0.08, "y": 0.08, "z": 0.0},  # Tea 탭 위치
+    96:  {"x": -0.02, "y": 0.08, "z": 0.0},  # Ade/Juice 탭 위치
 
+    # 최종 결제 단계 - 화면 왼쪽 위 고정 타겟 구역 조준
+    769: {"x": -0.15, "y": 0.20, "z": 0.0} 
+}
+
+# 하드웨어 및 카메라 기본 셋팅 값
+REFERENCE_ARUCO_ID = 769        
+CAMERA_INDEX = 0                
+MARKER_LENGTH = 0.05            
 CALIBRATION_DIR = "calibration"
 CAMERA_MATRIX_FILE = "calibration/camera_matrix.npy"
 DIST_COEFFS_FILE = "calibration/dist_coeffs.npy"

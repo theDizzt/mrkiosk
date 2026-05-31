@@ -9,10 +9,26 @@
 <body>
   <div class="app">
     <div class="device-frame">
+
+      <img
+        id="pose-marker"
+        class="kiosk-marker pose-marker"
+        src="kiosk_aruco_markers/aruco_id_769.png"
+        alt="position marker"
+      />
+
+      <img
+        id="state-marker"
+        class="kiosk-marker state-marker"
+        src="kiosk_aruco_markers/aruco_id_0.png"
+        alt="state marker"
+      />
+
       <header class="topbar">
         <div class="brand">ERICA COFFEE</div>
       </header>
 
+      <!-- 첫 화면 -->
       <section id="screen-home" class="screen active">
         <div class="home-content">
           <h1>어서 오세요</h1>
@@ -24,6 +40,7 @@
         </div>
       </section>
 
+      <!-- 메뉴 화면 -->
       <section id="screen-menu" class="screen">
         <div class="kiosk-layout">
 
@@ -46,7 +63,7 @@
             </div>
 
             <div id="cart-list" class="cart-list">
-              <div class="cart-empty">담은 메뉴가 없습니다.</div>
+            <div class="cart-empty">담은 메뉴가 없습니다.</div>
             </div>
 
             <div class="order-bottom">
@@ -66,9 +83,10 @@
             </div>
           </aside>
 
-        </div>
-      </section>
+      </div>
+    </section>
 
+      <!-- 주문 확인 화면 -->
       <section id="screen-receipt" class="screen">
         <div class="receipt-screen">
           <h2>주문 내용을 확인해 주세요</h2>
@@ -95,6 +113,65 @@
         </div>
       </section>
 
+      <!-- 결제 방식 선택 화면 -->
       <section id="screen-payment" class="screen">
         <div class="payment-content">
-          <div class
+          <div class="sub-label center">결제 방식 선택</div>
+          <h2>결제 수단을 선택해 주세요</h2>
+
+          <div class="payment-buttons">
+            <button class="secondary large" onclick="completePayment('카드')">카드</button>
+            <button class="secondary large" onclick="completePayment('간편페이')">간편페이</button>
+            <button class="secondary large" onclick="completePayment('기프티콘/쿠폰')">기프티콘/쿠폰</button>
+          </div>
+
+          <button class="text-button" onclick="showScreen('screen-receipt')">돌아가기</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="marker-id-debug" class="marker-id-debug">
+      Current ID: 0000
+    </div>
+
+  </div>
+
+  <!-- 옵션 모달 -->
+  <div id="option-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h3 id="modal-menu-name">음료명</h3>
+          <p>옵션을 선택해 주세요</p>
+        </div>
+        <button class="close-button" onclick="closeModal()">×</button>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">온도</div>
+        <div class="option-buttons" id="temp-options"></div>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">당도</div>
+        <div class="option-buttons" id="sweet-options"></div>
+      </div>
+
+      <div id="ice-group" class="option-group">
+        <div class="option-title">얼음</div>
+        <div class="option-buttons" id="ice-options"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="secondary" onclick="closeModal()">취소</button>
+        <button class="primary" onclick="addToCart()">담기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 -->
+  <div id="toast" class="toast hidden">결제가 완료되었습니다.</div>
+
+  <script src="script.js"></script>
+</body>
+</html>

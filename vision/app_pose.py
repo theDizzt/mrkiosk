@@ -14,66 +14,119 @@ from config import (
     CAMERA_MATRIX_FILE,
     DIST_COEFFS_FILE,
     REFERENCE_ARUCO_ID,
+    RING_COORDINATE_MAP, # config.py의 고정 맵 바인딩
 )
 
 from marker_fsm import MarkerFSM
 
 def decode_aruco_id(marker_id):
     """
-    최종 가이드라인 규칙에 의거하여 아루코 ID로부터 키오스크 상태 분석
+    [완전 개정] 홀수/짝수 무관하게 웹페이지 3진법 인코딩 매커니즘을 100% 역산해내는 디코더
     """
     result = {"phase": "UNKNOWN", "details": {}}
+    m_id = int(marker_id)
     
-    if 0 <= marker_id <= 160:
+    if 0 <= m_id <= 160:
         result["phase"] = "Phase_00"
-        if marker_id == 0:
+        if m_id == 0:
             result["details"]["state"] = "초기 매장/포장 선택 화면"
-        elif marker_id % 32 == 0:
-            cat_num = marker_id // 32
+        elif m_id % 32 == 0:
+            cat_num = m_id // 32
             cat_names = {1: "Coffee", 2: "Tea", 3: "Ade/Juice", 4: "Beverage", 5: "Blended"}
             result["details"]["state"] = f"{cat_names.get(cat_num, 'Unknown')} 카테고리 탐색"
 
-    elif 256 <= marker_id <= 447:
+    elif 256 <= m_id <= 447:
         result["phase"] = "Phase_01"
-        temp_val = marker_id - 256
+        temp_val = m_id - 256
         menu_hash = temp_val // 32
-        rem = temp_val % 32
-        temperature = rem // 8
-        rem = rem % 8
-        sugar = rem // 4
-        ice = (rem % 4) // 2
+        option_code = temp_val % 32
+        
+        # 3진법 수학적 역산 (나머지 연산 안전장치 강화)
+        temperature = option_code // 9
+        rem = option_code % 9
+        sugar = rem // 3
+        ice = rem % 3
         
         result["details"]["menu_hash"] = menu_hash
-        result["details"]["temperature"] = "미선택" if temperature == 0 else ("ICED" if temperature == 1 else "HOT")
-        result["details"]["sugar"] = "선택완료" if sugar == 1 else "미선택"
-        result["details"]["ice"] = "선택완료" if ice == 1 else "미선택"
+        result["details"]["temperature"] = "ICED" if temperature == 0 else "HOT"
+        result["details"]["sugar"] = "덜 달게" if sugar == 0 else ("보통" if sugar == 1 else "달게")
+        result["details"]["ice"] = "얼음 많이" if ice == 0 else ("얼음 보통" if ice == 1 else "얼음 적게")
+        
+        # 피실험자의 UI 진행 상황에 맞춘 다음 링 위치 결정을 위한 스텝 플래그
+        # 처음 진입해서 옵션을 하나도 변경 안 한 기본 상태 검사
+        if option_code == 4: # 기본 상태 (ICED(0*9) + 보통(1*3) + 얼음보통(1) = 4)
+            result["details"]["current_step"] = "TEMPERATURE"
+        else:
+            result["details"]["current_step"] = "PROGRESSING"
 
-    elif 512 <= marker_id <= 628:
+    elif 512 <= m_id <= 628:
         result["phase"] = "Phase_10"
-        result["details"]["common_reference_id"] = (marker_id - 512) // 4
+        result["details"]["common_reference_id"] = (m_id - 512) // 4
 
-    elif marker_id == 768:
+    elif m_id in [768, 769]:
+        result["phase"] = "Phase_11"
+        result["details"]["state"] = "최종 카드 결제 단계"
+        
+    return result
+    """
+    [교정] script.js의 3진법 인코딩 매커니즘과 100% 일치하도록 디코딩 구조 동기화
+    """
+    result = {"phase": "UNKNOWN", "details": {}}
+    m_id = int(marker_id)
+    
+    if 0 <= m_id <= 160:
+        result["phase"] = "Phase_00"
+        if m_id == 0:
+            result["details"]["state"] = "초기 매장/포장 선택 화면"
+        elif m_id % 32 == 0:
+            cat_num = m_id // 32
+            cat_names = {1: "Coffee", 2: "Tea", 3: "Ade/Juice", 4: "Beverage", 5: "Blended"}
+            result["details"]["state"] = f"{cat_names.get(cat_num, 'Unknown')} 카테고리 탐색"
+
+    elif 256 <= m_id <= 447:
+        result["phase"] = "Phase_01"
+        temp_val = m_id - 256
+        menu_hash = temp_val // 32
+        option_code = temp_val % 32
+        
+        # 3진법 역산 역추적 (script.js 동기화)
+        temperature = option_code // 9
+        rem = option_code % 9
+        sugar = rem // 3
+        ice = rem % 3
+        
+        result["details"]["menu_hash"] = menu_hash
+        result["details"]["temperature"] = "ICED" if temperature == 0 else "HOT"
+        result["details"]["sugar"] = "덜 달게" if sugar == 0 else ("보통" if sugar == 1 else "달게")
+        result["details"]["ice"] = "얼음 많이" if ice == 0 else ("얼음 보통" if ice == 1 else "얼음 적게")
+        
+        # 유저가 조작 중인 현재 세부 단계 판별 플래그 주입
+        # 초기 진입 상태 판단 가드 설정
+        if option_code == 0:
+            result["details"]["current_step"] = "TEMPERATURE"
+        else:
+            result["details"]["current_step"] = "PROGRESSING"
+
+    elif 512 <= m_id <= 628:
+        result["phase"] = "Phase_10"
+        result["details"]["common_reference_id"] = (m_id - 512) // 4
+
+    elif m_id in [768, 769]:
         result["phase"] = "Phase_11"
         result["details"]["state"] = "최종 카드 결제 단계"
         
     return result
 
 def _speak_worker(text):
-    """
-    백그라운드 스레드에서 SAPI5 엔진을 구동하여 TTS 음성을 출력하는 함수
-    """
     try:
         engine = pyttsx3.init()
-        engine.setProperty('rate', 150) # 고령층 피실험자를 배려한 발화 속도 저하
+        engine.setProperty('rate', 150) # 고령층 피실험자용 속도 감속
         engine.say(text)
         engine.runAndWait()
     except Exception as e:
         print(f"TTS Speech Failed: {e}")
 
 def speak(text):
-    """
-    비전 연산 메인 루프 프레임 저하 방지를 위한 비동기 발화 인터페이스
-    """
     print(f"TTS Active User Guide: \"{text}\"")
     threading.Thread(target=_speak_worker, args=(text,), daemon=True).start()
 
@@ -210,9 +263,6 @@ def draw_state_info(frame, state_name, payload, pose_text=None, state_marker_id=
         cv2.putText(frame, pose_text, (20, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 165, 255), 2)
 
 def estimate_pose_modern(corners, marker_length, camera_matrix, dist_coeffs):
-    """
-    OpenCV 4.7+ 버전용 estimatePoseSingleMarkers 대체 구동 구현 함수
-    """
     obj_points = np.array([
         [-marker_length / 2,  marker_length / 2, 0],
         [ marker_length / 2,  marker_length / 2, 0],
@@ -260,22 +310,15 @@ def main():
             
             for i, aruco_id in enumerate(aruco_ids.flatten()):
                 current_id = int(aruco_id)
-                
-                # 최신 OpenCV 버전 대응용 포즈 연산 우회 호출
                 current_rvec, current_tvec = estimate_pose_modern(aruco_corners[i][0], MARKER_LENGTH, camera_matrix, dist_coeffs)
                 
                 if current_rvec is not None and current_tvec is not None:
                     cv2.drawFrameAxes(frame, camera_matrix, dist_coeffs, current_rvec, current_tvec, 0.02)
                     
-                    # 0번 고정 마커: 키오스크 기준 좌표계 획득
                     if current_id == REFERENCE_ARUCO_ID:
                         rvec, tvec = current_rvec, current_tvec
                         pose_text = format_pose_text(tvec)
-                    
-                    # 가변 마커: 과업 상태 전이 트리거
-
                     else:
-                        # 0번 고정 마커가 인식되어 tvec(기준 좌표)이 먼저 확보된 경우에만 상태 마커를 연산함
                         if tvec is not None: 
                             stable_id = stable_decoder.update(current_id)
                             if stable_id is not None:
@@ -289,25 +332,20 @@ def main():
         else:
             pose_text = "No ArUco Marker Detected"
 
-        # FSM 트랜잭션 수립 및 비동기 발화 구역
-
+        # ==============================================================================
+        # [실시간 교정 완료] FSM 트랜잭션 수립 및 매 프레임 동적 링 좌표 연산 구역
+        # ==============================================================================
         if detected_state_id is not None:
             last_state_marker_id = detected_state_id
 
             if rvec is not None and tvec is not None:
+                # 1. FSM 상태 변경 여부 체크 및 상태 전환
                 changed = fsm.update_by_marker_id(detected_state_id)
+                current_state_name = fsm.get_current_state()
+                kiosk_info = decode_aruco_id(detected_state_id)
 
+                # 2. 최초 상태 변경 시에만 TTS 음성 안내 1회 출력 (프레임 마비 방지)
                 if changed:
-                    payload = dict(fsm.get_state_payload())
-                    current_state_name = fsm.get_current_state()
-
-                    kiosk_info = decode_aruco_id(detected_state_id)
-                    payload["kiosk_phase"] = kiosk_info["phase"]
-                    payload["kiosk_details"] = kiosk_info["details"]
-
-                    # -----------------------------------------------------------
-                    # 최적화된 가이드라인 TTS 발화 설계
-                    # -----------------------------------------------------------
                     if current_state_name == "IDLE":
                         speak("원하시는 주문 방식을 선택해 주세요.")
                     elif current_state_name == "CATEGORY_SELECT":
@@ -320,16 +358,56 @@ def main():
                         speak("우측 하단 카드리더기에 신용카드를 끝까지 넣어주세요.")
                     elif current_state_name == "ERROR_RECOVERY":
                         speak("잘못된 입력이 감지되었습니다. 뒤로 가기 버튼을 눌러주세요.")
-                    # -----------------------------------------------------------
+                    
+                    print(f"[FSM 이동 성공] {fsm.previous_state} -> {current_state_name} (마커: {detected_state_id})")
 
-                    local_position = payload.get("local_position", {"x": 0.0, "y": 0.0, "z": 0.0})
-                    world_position = local_to_camera_world(rvec, tvec, local_position)
-                    world_position = position_filter.update(world_position)
-                    payload["world_position"] = world_position
+                # 3. [★ 핵심 교정] changed 블록 밖으로 탈출시켜 '매 프레임' 실시간 좌표를 갱신합니다.
+                local_position = {"x": 0.0, "y": 0.0, "z": 0.0}
 
+                if kiosk_info["phase"] == "Phase_01":
+                    details = kiosk_info["details"]
+                    step = details.get("current_step")
+                    
+                    # 옵션창 상태 비트에 따른 타겟 가이드 버튼 위치 동적 매핑
+                    if step == "TEMPERATURE":
+                        # 기본 진입 시: 온도 선택 (ICED 버튼 구역 가이드)
+                        local_position = {"x": -0.06, "y": -0.02, "z": 0.0}
+                    elif details.get("temperature") == "ICED" and details.get("ice") == "얼음 보통":
+                        # 온도 선택 완료 후 기본 세팅: 얼음 선택 행 가이드
+                        local_position = {"x": 0.0, "y": -0.12, "z": 0.0}
+                    else:
+                        # 그 외 최종 상태: 장바구니 [담기] 버튼 구역 가이드
+                        local_position = {"x": -0.05, "y": -0.18, "z": 0.0}
+                else:
+                    # Phase 01이 아닌 일반 카테고리/결제 단계는 config.py 고정 테이블 실시간 참조
+                    local_position = RING_COORDINATE_MAP.get(detected_state_id, {"x": 0.0, "y": 0.0, "z": 0.0})
+
+                # 4. 행렬 연산을 통해 3D 절대 공간 좌표로 실시간 변환
+                world_position = local_to_camera_world(rvec, tvec, local_position)
+                world_position = position_filter.update(world_position)
+                
+                # 런타임 공유 페이로드 업데이트
+                payload = dict(fsm.get_state_payload()) if fsm.get_state_payload() else {}
+                payload["kiosk_phase"] = kiosk_info["phase"]
+                payload["kiosk_details"] = kiosk_info["details"]
+                payload["local_position"] = local_position
+                payload["world_position"] = world_position
+
+                # 5. 매 프레임마다 변동되는 리얼타임 3D 좌표 콘솔 인쇄
+                print(f"[트래킹 성공] 마커 ID: {detected_state_id} -> 3D World XYZ: [{world_position['x']:.4f}m, {world_position['y']:.4f}m, {world_position['z']:.4f}m]")
+
+                # 로깅 및 상태 저장은 데이터 오버헤드를 막기 위해 상태가 바뀐 시점에만 기록
+                if changed:
                     append_log_event(current_state_name, detected_state_id, rvec, tvec, payload)
                     write_runtime_state(current_state_name, detected_state_id, rvec, tvec, payload)
                     log_event(current_state_name, detected_state_id, tvec)
+
+        # 769번 고정마커 단독 노출 예외 가드 핸들링
+        if last_state_marker_id == REFERENCE_ARUCO_ID and rvec is not None and tvec is not None:
+            if fsm.get_current_state() == "CONFIRM":
+                local_position = RING_COORDINATE_MAP.get(REFERENCE_ARUCO_ID, {"x": -0.15, "y": 0.20, "z": 0.0})
+                world_position = local_to_camera_world(rvec, tvec, local_position)
+                world_position = position_filter.update(world_position)
 
         draw_state_info(frame, fsm.get_current_state(), fsm.get_state_payload(), pose_text, last_state_marker_id)
         cv2.imshow("MR Kiosk Prototype - Unified ArUco System", frame)
