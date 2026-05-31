@@ -62,6 +62,8 @@ function showScreen(screenId) {
   });
 
   document.getElementById(screenId).classList.add("active");
+
+  updateStateMarker();
 }
 
 function selectDineType(type) {
@@ -71,6 +73,8 @@ function selectDineType(type) {
     type === "매장" ? "매장에서 먹고 갈게요" : "포장해서 갈게요";
 
   showScreen("screen-menu");
+
+  updateStateMarker();
 }
 
 function setupCategoryButtons() {
@@ -83,6 +87,7 @@ function setupCategoryButtons() {
 
       currentCategory = button.dataset.category;
       renderMenus();
+      updateStateMarker();
     });
   });
 }
@@ -121,21 +126,27 @@ function openModal(menu) {
 
   renderOptionButtons();
   document.getElementById("option-modal").classList.remove("hidden");
+
+  updateStateMarker();
 }
 
 function closeModal() {
   document.getElementById("option-modal").classList.add("hidden");
   selectedMenu = null;
+
+  updateStateMarker();
 }
 
 function renderOptionButtons() {
   createOptionGroup("temp-options", ["ICED", "HOT"], selectedOptions.temp, value => {
     selectedOptions.temp = value;
+    updateStateMarker();
     renderOptionButtons();
   });
 
   createOptionGroup("sweet-options", ["덜 달게", "보통", "달게"], selectedOptions.sweetness, value => {
     selectedOptions.sweetness = value;
+    updateStateMarker();
     renderOptionButtons();
   });
 
@@ -146,6 +157,7 @@ function renderOptionButtons() {
 
     createOptionGroup("ice-options", ["얼음 많이", "얼음 보통", "얼음 적게"], selectedOptions.ice, value => {
       selectedOptions.ice = value;
+      updateStateMarker();
       renderOptionButtons();
     });
   } else {
@@ -189,6 +201,22 @@ function addToCart() {
 
   closeModal();
   renderOrderSummary();
+
+  updateStateMarker();
+}
+
+function changeQuantity(itemId, change) {
+  const item = cart.find(i => i.id === itemId);
+  if (!item) return;
+
+  item.quantity += change;
+
+  if (item.quantity <= 0) {
+    cart = cart.filter(i => i.id !== itemId);
+  }
+
+  renderOrderSummary();
+  updateStateMarker();
 }
 
 function renderOrderSummary() {
@@ -279,6 +307,8 @@ function goToReceipt() {
   receiptTotalPrice.textContent = formatPrice(totalPrice);
 
   showScreen("screen-receipt");
+
+  updateStateMarker();
 }
 
 function completePayment(method) {
@@ -288,6 +318,7 @@ function completePayment(method) {
     cart = [];
     renderOrderSummary();
     showScreen("screen-home");
+    updateStateMarker();
   }, 1200);
 }
 
@@ -301,6 +332,80 @@ function showToast(message) {
   }, 1000);
 }
 
+function updateStateMarker() {
+  let markerId = 0;
+
+  const activeScreen = document.querySelector(".screen.active");
+  if (!activeScreen) return;
+
+  const screenId = activeScreen.id;
+
+  if (screenId === "screen-home") {
+    markerId = 0;
+  }
+
+  else if (screenId === "screen-menu") {
+    const modal = document.getElementById("option-modal");
+
+    if (modal && !modal.classList.contains("hidden")) {
+      if (selectedMenu) {
+        const menuHash = (selectedMenu.id - 1) % 6;
+
+        const tempValue =
+          selectedOptions.temp === "ICED" ? 0 :
+          selectedOptions.temp === "HOT" ? 1 : 0;
+
+        const sugarValue =
+          selectedOptions.sweetness === "덜 달게" ? 0 :
+          selectedOptions.sweetness === "보통" ? 1 :
+          selectedOptions.sweetness === "달게" ? 2 : 1;
+
+        const iceValue =
+          selectedOptions.ice === "얼음 많이" ? 0 :
+          selectedOptions.ice === "얼음 보통" ? 1 :
+          selectedOptions.ice === "얼음 적게" ? 2 : 1;
+
+        const optionCode = (tempValue * 9) + (sugarValue * 3) + iceValue;
+
+        markerId = 256 + (menuHash * 32) + optionCode;
+      } else {
+        markerId = 256;
+      }
+    } else {
+      if (currentCategory === "Coffee") markerId = 32;
+      else if (currentCategory === "Tea") markerId = 64;
+      else if (currentCategory === "Ade/Juice") markerId = 96;
+      else if (currentCategory === "Beverage") markerId = 128;
+      else if (currentCategory === "Blended") markerId = 160;
+    }
+  }
+
+  else if (screenId === "screen-receipt") {
+    if (cart.length > 0) {
+      const rawMenuId = parseInt(cart[0].id.split("-")[0]) - 1;
+      markerId = 512 + (rawMenuId * 4);
+    } else {
+      markerId = 512;
+    }
+  }
+
+  else if (screenId === "screen-payment") {
+    markerId = 768;
+  }
+
+  const marker = document.getElementById("state-marker");
+  if (marker) {
+    const formattedId = String(markerId);
+    marker.src = `./kiosk_aruco_markers/aruco_id_${formattedId}.png`;
+
+    const debugText = document.getElementById("marker-id-debug");
+    if (debugText) {
+      debugText.textContent = `Current ID: ${formattedId}`;
+    }
+  }
+}
+
 setupCategoryButtons();
 renderMenus();
 renderOrderSummary();
+updateStateMarker();
