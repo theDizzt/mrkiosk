@@ -455,6 +455,11 @@ button {
   gap: 14px;
 }
 
+.receipt-buttons .primary {
+  background: var(--yellow);
+  color: #333;
+}
+
 /* 옵션 모달 */
 .modal-overlay {
   position: fixed;
