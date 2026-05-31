@@ -1,8 +1,5 @@
 # vision/marker_fsm.py
 
-from kiosk_guide_model import EXPECTED_ROUTE
-
-
 class KioskFSM:
     def __init__(self, route):
         if not route or len(route) < 2:
@@ -42,6 +39,12 @@ class KioskFSM:
                 return self._result(True, "payment_complete_reset")
 
             return self._result(True, "valid_next")
+        
+        if detected_id in self.route:
+            self.index = self.route.index(detected_id)
+            self.current_id = detected_id
+            self.last_valid_id = detected_id
+            return self._result(True, "sync_state")
 
         return {
             "ok": False,
