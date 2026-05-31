@@ -111,18 +111,23 @@ public class RuntimeStateReader : MonoBehaviour
         return CurrentState.state_marker.id;
     }
 
-    public Vector2 GetTargetPosition()
+    public Vector3 GetTargetWorldPosition()
     {
         if (
             CurrentState == null ||
             CurrentState.fsm == null ||
-            CurrentState.fsm.target == null
+            CurrentState.fsm.target == null ||
+            CurrentState.fsm.target.world_position == null
         )
         {
-            return Vector2.zero;
+            return Vector3.zero;
         }
 
-        return new Vector2(CurrentState.fsm.target.x, CurrentState.fsm.target.y);
+        return new Vector3(
+            CurrentState.fsm.target.world_position.x,
+            -CurrentState.fsm.target.world_position.y,
+            CurrentState.fsm.target.world_position.z
+        );
     }
 
     public Vector3 GetReferenceTvec()
@@ -176,8 +181,35 @@ public class RuntimeStateReader : MonoBehaviour
             return false;
         }
 
-        return CurrentState.fsm.target.width > 0f &&
-            CurrentState.fsm.target.height > 0f;
+        return CurrentState.fsm.target.world_size != null;
+    }
+
+    public Vector2 GetTargetWorldSize()
+    {
+        if (
+            CurrentState == null ||
+            CurrentState.fsm == null ||
+            CurrentState.fsm.target == null ||
+            CurrentState.fsm.target.world_size == null
+        )
+        {
+            return Vector2.zero;
+        }
+
+        return new Vector2(
+            CurrentState.fsm.target.world_size.w,
+            CurrentState.fsm.target.world_size.h
+        );
+    }
+
+    public bool IsRecoveryMode()
+    {
+        if (CurrentState == null || CurrentState.fsm == null)
+        {
+            return false;
+        }
+
+        return CurrentState.fsm.recovery;
     }
 }
 
@@ -230,15 +262,51 @@ public class FsmData
 {
     public string state;
     public string label;
+
     public int state_id;
+    public int detected_state_id;
+
+    public int expected_id;
+    public int target_state_id;
+
+    public bool recovery;
+
     public TargetData target;
+
+    public RectPx rect_px;
 }
 
 [Serializable]
 public class TargetData
 {
+    public string name;
+    public string label;
+
+    public RectPx rect_px;
+    public WorldPosition world_position;
+    public WorldSize world_size;
+}
+
+[Serializable]
+public class WorldPosition
+{
     public float x;
     public float y;
-    public float width;
-    public float height;
+    public float z;
+}
+
+[Serializable]
+public class WorldSize
+{
+    public float w;
+    public float h;
+}
+
+[System.Serializable]
+public class RectPx
+{
+    public float x;
+    public float y;
+    public float w;
+    public float h;
 }
