@@ -17,6 +17,8 @@ from kiosk_guide_model import get_target_for_state
 from kiosk_id_formula import build_expected_route
 from config import get_state_info
 
+from udp_sender import UdpSender
+
 
 def load_calibration(calibration_dir: Path):
     camera_matrix_path = calibration_dir / "camera_matrix.npy"
@@ -139,6 +141,9 @@ def parse_args():
         help="Ice amount option",
     )
 
+    parser.add_argument("--udp-host", type=str, default=None)
+    parser.add_argument("--udp-port", type=int, default=5005)
+
     return parser.parse_args()
 
 
@@ -164,6 +169,12 @@ def main():
     )
 
     writer = RuntimeWriter(output_path)
+
+    udp_sender = None
+
+    if args.udp_host is not None:
+        udp_sender = UdpSender(args.udp_host, args.udp_port)
+        print(f"[INFO] UDP enabled: {args.udp_host}:{args.udp_port}")
 
     # 키오스크 상태 전이 FSM
     expected_route = build_expected_route(
@@ -251,6 +262,9 @@ def main():
         }
 
         writer.write(runtime_state)
+
+        if udp_sender is not None:
+            udp_sender.send(runtime_state)
 
         if args.show:
             debug_frame = detector.draw_debug(frame, result)
