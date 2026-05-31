@@ -1,4 +1,4 @@
-REFERENCE_ARUCO_ID = 0
+REFERENCE_ARUCO_ID = 769
 
 ARUCO_DICT_NAME = "DICT_5X5_1000"
 
@@ -8,95 +8,45 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
 STATE_MAP = {
-    10: {
-        "name": "MAIN_MENU",
+    0: {
+        "name": "HOME",
         "label": "메인 화면",
-        "target": {
-            "x": 960,
-            "y": 540,
-            "width": 700,
-            "height": 500,
-        },
+        "target": None,
     },
-    20: {
-        "name": "ORDER_START",
-        "label": "주문 시작",
-        "target": {
-            "x": 960,
-            "y": 860,
-            "width": 420,
-            "height": 110,
-        },
+    32: {
+        "name": "CATEGORY_COFFEE",
+        "label": "Coffee 카테고리",
+        "target": "tea_category_button",
     },
-    30: {
-        "name": "MENU_SELECT",
-        "label": "메뉴 선택",
-        "target": {
-            "x": 520,
-            "y": 420,
-            "width": 260,
-            "height": 220,
-        },
+    64: {
+        "name": "CATEGORY_TEA",
+        "label": "Tea 카테고리",
+        "target": "peach_ice_tea_button",
     },
-    40: {
-        "name": "OPTION_SELECT",
-        "label": "옵션 선택",
-        "target": {
-            "x": 1420,
-            "y": 520,
-            "width": 360,
-            "height": 180,
-        },
+    260: {
+        "name": "PEACH_ICE_TEA_DEFAULT",
+        "label": "복숭아아이스티 기본 옵션",
+        "target": "less_sweet_button",
     },
-    50: {
-        "name": "CART_CONFIRM",
-        "label": "장바구니 확인",
-        "target": {
-            "x": 1600,
-            "y": 900,
-            "width": 360,
-            "height": 120,
-        },
+    257: {
+        "name": "PEACH_ICE_TEA_LESS_SWEET",
+        "label": "덜 달게 선택",
+        "target": "more_ice_button",
     },
-    60: {
-        "name": "PAYMENT_GUIDE",
-        "label": "결제 안내",
-        "target": {
-            "x": 1700,
-            "y": 930,
-            "width": 320,
-            "height": 110,
-        },
+    256: {
+        "name": "PEACH_ICE_TEA_MORE_ICE",
+        "label": "얼음 많이 선택",
+        "target": "add_to_cart_button",
     },
-    70: {
-        "name": "PAYMENT_PROCESSING",
-        "label": "결제 진행 중",
-        "target": {
-            "x": 960,
-            "y": 540,
-            "width": 500,
-            "height": 180,
-        },
+    536: {
+        "name": "RECEIPT_CONFIRM",
+        "label": "주문 확인",
+        "target": "receipt_payment_button",
     },
-    80: {
-        "name": "PAYMENT_COMPLETE",
-        "label": "결제 완료",
-        "target": {
-            "x": 960,
-            "y": 540,
-            "width": 500,
-            "height": 180,
-        },
-    },
-    90: {
-        "name": "ERROR_HELP",
-        "label": "오류 / 도움말",
-        "target": {
-            "x": 960,
-            "y": 900,
-            "width": 700,
-            "height": 140,
-        },
+    768: {
+        "name": "PAYMENT_SELECT",
+        "label": "결제 방식 선택",
+        "target": "card_payment_button",
     },
 }
 

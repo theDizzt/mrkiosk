@@ -1,4 +1,5 @@
 # vision/app_aruco_dual.py
+# python vision/app_aruco_dual.py --reference-id 769 --show
 
 import argparse
 from pathlib import Path
@@ -8,6 +9,12 @@ import numpy as np
 
 from aruco_dual_detector import DualArucoDetector
 from aruco_runtime import RuntimeStabilizer, RuntimeWriter
+
+# 키오스크 FSM / 좌표 계산 모듈
+from marker_fsm import KioskFSM
+from kiosk_geometry import build_target_payload
+from kiosk_guide_model import get_target_for_state
+from kiosk_id_formula import build_expected_route
 from config import get_state_info
 
 
@@ -94,6 +101,44 @@ def parse_args():
         help="Show debug camera window",
     )
 
+    parser.add_argument(
+        "--category",
+        type=str,
+        default="Tea",
+        help="Order category: Coffee, Tea, Ade/Juice, Beverage, Blended",
+    )
+
+    parser.add_argument(
+        "--menu-id",
+        type=int,
+        default=7,
+        help="Menu ID from kiosk menu data",
+    )
+
+    parser.add_argument(
+        "--temp",
+        type=str,
+        default="ICED",
+        choices=["ICED", "HOT"],
+        help="Temperature option",
+    )
+
+    parser.add_argument(
+        "--sweetness",
+        type=str,
+        default="보통",
+        choices=["덜 달게", "보통", "달게"],
+        help="Sweetness option",
+    )
+
+    parser.add_argument(
+        "--ice",
+        type=str,
+        default="얼음 보통",
+        choices=["얼음 많이", "얼음 보통", "얼음 적게"],
+        help="Ice amount option",
+    )
+
     return parser.parse_args()
 
 
@@ -120,6 +165,19 @@ def main():
 
     writer = RuntimeWriter(output_path)
 
+    # 키오스크 상태 전이 FSM
+    expected_route = build_expected_route(
+        category=args.category,
+        menu_id=args.menu_id,
+        temp=args.temp,
+        sweetness=args.sweetness,
+        ice=args.ice,
+    )
+    
+    print(f"[INFO] Expected route: {expected_route}")
+
+    kiosk_fsm = KioskFSM(route=expected_route)
+
     cap = cv2.VideoCapture(args.camera)
 
     if not cap.isOpened():
@@ -145,14 +203,51 @@ def main():
             reference_id=args.reference_id,
         )
 
-        state_marker_id = runtime_state["state_marker"]["id"]
-        state_info = get_state_info(state_marker_id)
+        detected_state_id = runtime_state["state_marker"]["id"]
 
+        # FSM 검증
+        # 잘못된 상태 ID가 들어오면 현재 정상 상태를 유지하고 recovery=True로 표시
+        fsm_result = kiosk_fsm.update(detected_state_id)
+
+        guide_state_id = fsm_result["current_id"]
+        state_info = get_state_info(guide_state_id)
+
+        target_payload = None
+
+        # 항상 먼저 기본값을 만들어둔다
+        target_state_id = fsm_result.get("expected_id")
+
+        # reference pose가 있을 때만 버튼 위치 계산 가능
+        if target_state_id is None:
+            target_state_id = guide_state_id
+
+        reference_pose = runtime_state["reference"]["pose"]
+
+        if reference_pose is not None:
+            target = get_target_for_state(target_state_id)
+
+            if target is not None:
+                rvec_ref = np.array(reference_pose["rvec"], dtype=np.float32)
+                tvec_ref = np.array(reference_pose["tvec"], dtype=np.float32)
+
+                target_payload = build_target_payload(
+                    rvec_ref=rvec_ref,
+                    tvec_ref=tvec_ref,
+                    target=target,
+                    marker_length=args.marker_length,
+                )
+
+        # fsm 결과 확장
         runtime_state["fsm"] = {
             "state": state_info["name"],
             "label": state_info["label"],
-            "state_id": state_marker_id,
-            "target": state_info["target"],
+            "state_id": guide_state_id,
+            "detected_state_id": detected_state_id,
+            "target_state_id": target_state_id,
+            "expected_id": fsm_result.get("expected_id"),
+            "recovery": fsm_result["recovery"],
+            "message": fsm_result["message"],
+            "target": target_payload,
         }
 
         writer.write(runtime_state)
