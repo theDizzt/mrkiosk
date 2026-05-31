@@ -20,7 +20,14 @@ class RuntimeWriter:
         with open(temp_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-        os.replace(temp_path, self.output_path)
+        for _ in range(5):
+            try:
+                os.replace(temp_path, self.output_path)
+                break
+            except PermissionError:
+                time.sleep(0.02)
+        else:
+            print(f"[WARN] Failed to replace runtime state file: {self.output_path}")
 
 
 class RuntimeStabilizer:

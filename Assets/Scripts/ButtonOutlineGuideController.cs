@@ -76,11 +76,17 @@ public class ButtonOutlineGuideController : MonoBehaviour
 
         TargetData target = reader.CurrentState.fsm.target;
 
+        if (target.rect_px == null)
+        {
+            SetGuideVisible(false);
+            return;
+        }
+
         UpdateGuideRect(
-            target.x,
-            target.y,
-            target.width,
-            target.height
+            target.rect_px.x,
+            target.rect_px.y,
+            target.rect_px.w,
+            target.rect_px.h
         );
 
         SetGuideVisible(true);
@@ -94,8 +100,15 @@ public class ButtonOutlineGuideController : MonoBehaviour
                 "[ButtonOutlineGuide]\n" +
                 "state: " + state + "\n" +
                 "state id: " + stateId + "\n" +
-                "target center: (" + target.x + ", " + target.y + ")\n" +
-                "target size: (" + target.width + ", " + target.height + ")"
+                "target rect: (" +
+                target.rect_px.x + ", " +
+                target.rect_px.y + ", " +
+                target.rect_px.w + ", " +
+                target.rect_px.h + ")\n" +
+                "target world: (" +
+                target.world_position.x + ", " +
+                target.world_position.y + ", " +
+                target.world_position.z + ")"
             );
         }
 

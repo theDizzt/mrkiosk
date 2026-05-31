@@ -37,7 +37,8 @@ public class RuntimeStateDebugPrinter : MonoBehaviour
         bool valid = reader.CurrentState.valid;
         string fsmState = reader.GetFsmStateName();
         int stateId = reader.GetStateMarkerId();
-        Vector2 target = reader.GetTargetPosition();
+        Vector3 target = reader.GetTargetWorldPosition();
+        Vector2 targetSize = reader.GetTargetWorldSize();
         Vector3 tvec = reader.GetReferenceTvec();
         Vector3 rvec = reader.GetReferenceRvec();
 
@@ -66,11 +67,20 @@ public class RuntimeStateDebugPrinter : MonoBehaviour
 
         string targetText = "null";
 
-        if (targetData != null)
+        if (
+            targetData != null &&
+            targetData.world_position != null &&
+            targetData.world_size != null
+        )
         {
             targetText =
-                "center=(" + targetData.x + ", " + targetData.y + "), " +
-                "size=(" + targetData.width + ", " + targetData.height + ")";
+                "world_position=(" +
+                targetData.world_position.x + ", " +
+                targetData.world_position.y + ", " +
+                targetData.world_position.z + "), " +
+                "world_size=(" +
+                targetData.world_size.w + ", " +
+                targetData.world_size.h + ")";
         }
 
         Debug.Log(
@@ -79,6 +89,8 @@ public class RuntimeStateDebugPrinter : MonoBehaviour
             "fsm.state: " + fsmState + "\n" +
             "state_marker.id: " + stateId + "\n" +
             "target: " + targetText + "\n" +
+            "reader.targetWorldPosition: " + target + "\n" +
+            "reader.targetWorldSize: " + targetSize + "\n" +
             "reference.tvec: " + tvec + "\n" +
             "reference.rvec: " + rvec
         );

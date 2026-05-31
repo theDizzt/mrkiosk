@@ -142,8 +142,8 @@ def build_target_payload(rvec_ref, tvec_ref, target, rvec_state=None, tvec_state
     world_size = rect_size_to_world_size(rect, scale_x, scale_y)
 
     return {
-        "name": target["name"],
-        "label": target["label"],
+        "name": target.get("name", "unknown_target"),
+        "label": target.get("label", ""),
         "rect_px": rect,
         "center_px": center,
         "world_position": world_position,
