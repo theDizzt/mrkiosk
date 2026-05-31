@@ -1,0 +1,4 @@
+{"timestamp": "2026-05-31T16:47:05.237477", "state": "CATEGORY_SELECT", "marker_id": 32, "event": "state_enter", "tvec": [-0.41950670533536183, -0.2825259596852121, 0.9322140853964367]}
+{"timestamp": "2026-05-31T16:47:15.126134", "state": "ITEM_SELECT", "marker_id": 260, "event": "state_enter", "tvec": [-0.41173990857582093, -0.2673599657230488, 0.9055171232302937]}
+{"timestamp": "2026-05-31T17:12:06.857326", "state": "CATEGORY_SELECT", "marker_id": 32, "event": "state_enter", "tvec": [-0.3995375361439099, -0.29558387502375655, 0.9577640738922044]}
+{"timestamp": "2026-05-31T17:12:11.833819", "state": "ITEM_SELECT", "marker_id": 260, "event": "state_enter", "tvec": [-0.40042310008433807, -0.2602792428397987, 0.9615909017848877]}
