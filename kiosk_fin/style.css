@@ -1,0 +1,1144 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+:root {
+  --bg: #f3f3f3;
+  --surface: #fefefe;
+  --line: #d7d7d7;
+  --text: #4f4f4f;
+  --text-dark: #2f2f2f;
+  --text-soft: #7b7b7b;
+  --brown: #5B524A;
+  --brown-a70: rgba(91, 82, 74, 0.7);
+  --yellow: #f2db69;
+  --shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Pretendard', sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.app {
+  position: relative;
+  z-index: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+.device-shell {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.device-frame {
+  position: relative;
+  width: 1024px;
+  height: 720px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* 브라우저 화면 네 모서리 (키오스크 밖, 가장자리에서 20px) */
+.corner-markers {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.corner-marker {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  background: #000;
+}
+
+.corner-marker--tl {
+  top: 20px;
+  left: 20px;
+  background: url('markers/marker_769.png') center / 100% 100% no-repeat;
+}
+
+.corner-marker--tr {
+  top: 20px;
+  right: 20px;
+  background: url('markers/marker_769.png') center / 100% 100% no-repeat;
+}
+
+.corner-marker--bl {
+  bottom: 20px;
+  left: 20px;
+}
+
+.corner-marker--br {
+  bottom: 20px;
+  right: 20px;
+}
+
+.topbar {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 32px;
+  background: #fefefe;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 35px;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.device-frame.on-home-screen .topbar-home-btn {
+  display: none;
+}
+
+.topbar-home-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  min-height: 52px;
+  padding: 4px 8px;
+  margin: 0 -8px 0 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--text-dark);
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.topbar-home-btn:active,
+.topbar-home-btn.touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.topbar-home-icon {
+  display: block;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  height: calc(100% - 72px);
+}
+
+.screen.active {
+  display: block;
+}
+
+/* 첫 화면 */
+.home-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f6f6f6;
+  padding: 40px;
+  text-align: center;
+}
+
+.home-content {
+  padding: 16px 20px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+  overflow: hidden;
+}
+
+.home-content h1 {
+  margin: 6px 0 10px;
+  padding-left: 3%;
+  font-size: 45px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.home-content p {
+  margin: 0 0 24px;
+  padding-left: 3%;
+  font-size: 22px;
+  font-weight: 700;
+  color: #4a4a4a;
+}
+
+.home-buttons {
+  width: 94%;
+  flex: 1;
+  min-height: 0;
+  max-width: none;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 24px;
+  padding: 8px 0;
+}
+
+.home-choice-button {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border-radius: 28px;
+  font-size: 30px;
+  font-weight: 720;
+  padding: 56px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  overflow: hidden;
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.home-choice-button:active,
+.home-choice-button.touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.home-choice-button.cta {
+  background: var(--yellow);
+  color: var(--brown);
+  border: 1px solid #e4cd5f;
+}
+
+.home-choice-button:not(.cta) {
+  background: var(--brown);
+  color: var(--yellow);
+  border: 1px solid #6b5f55;
+}
+
+.home-choice-label {
+  display: block;
+}
+
+.home-choice-image {
+  width: 100%;
+  max-width: 100%;
+  max-height: 72%;
+  height: auto;
+  margin-top: auto;
+  object-fit: contain;
+}
+
+.home-choice-image-store {
+  max-height: 80%;
+}
+
+.primary,
+.secondary {
+  height: 64px;
+  border-radius: 20px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.primary {
+  background: #4c4c4c;
+  color: #fefefe;
+}
+
+.secondary {
+  background: #fefefe;
+  color: var(--text-dark);
+  border: 1px solid #d0d0d0;
+}
+
+.large {
+  height: 84px;
+}
+
+.text-button {
+  margin-top: 20px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 17px;
+}
+
+/* 메뉴 화면 전체 */
+.kiosk-layout {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-rows: 100%;
+  background: #f3f3f3;
+  overflow: hidden;
+}
+
+/* 좌측 메뉴 영역 */
+.menu-area {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 72px minmax(0, 1fr);
+  padding: 18px;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 상단 카테고리 */
+.category-bar {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  height: 56px;
+}
+
+.category {
+  background: #e8e8e8;
+  color: #555;
+  font-size: 17px;
+  font-weight: 700;
+  border-radius: 12px;
+  line-height: 1.15;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.category.active {
+  background: var(--yellow);
+  color: #2f2f2f;
+}
+
+/* 메뉴 6개 고정 그리드 */
+.menu-grid {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  overflow: hidden;
+}
+
+.menu-item-card {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: #fefefe;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 14px;
+  border-radius: 35px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 메뉴 이름 */
+.menu-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #555;
+  text-align: center;
+}
+
+/* 메뉴 가격 */
+.menu-price {
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #4d4d4d;
+  text-align: center;
+}
+
+
+/* 메뉴 이미지 */
+.menu-img {
+  width: 100%;
+  height: 80%;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* 우측 주문 확인 영역 */
+.order-panel {
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: #fefefe;
+  border-left: 1px solid var(--line);
+  padding: 22px;
+  display: grid;
+  grid-template-rows: 76px minmax(0, 1fr) minmax(170px, auto);
+  overflow: hidden;
+}
+
+/* 구분선 */
+.order-header {
+  border-bottom: 1px solid #dddddd;
+  color: var(--text-dark);
+}
+
+/* 주문 확인 */
+.order-header h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+/* 주문 확인 아래 설명 문장 */
+.order-header p {
+  margin: 6px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.cart-list {
+  position: relative;
+  z-index: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+
+.cart-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.cart-item {
+  background: #f3f3f3;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.cart-item-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: #333;
+}
+
+.cart-item-option {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #777;
+  line-height: 1.6;
+}
+
+.cart-item-bottom {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  font-size: 13px;
+  color: #555;
+}
+
+.cart-item-bottom strong {
+  font-size: 13px;
+  color: #333;
+}
+
+.order-bottom {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid #dddddd;
+  padding-top: 16px;
+}
+
+.order-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.order-total-row span {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+.order-total-row strong {
+  font-size: 18px;
+  font-weight: 800;
+  color: #333;
+}
+
+.order-total-row.total {
+  margin-bottom: 16px;
+}
+
+.order-total-row.total strong {
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.cart-qty-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.qty-control {
+  display: grid;
+  grid-template-columns: 24px 2.75rem 24px;
+  column-gap: 6px;
+  align-items: center;
+  justify-items: center;
+}
+
+.qty-control button {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brown);
+  color: var(--surface);
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.qty-control .qty-value {
+  width: 100%;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.checkout-button {
+  width: 100%;
+  height: 68px;
+  border-radius: 12px;
+  background: #cfcfcf;
+  color: #555;
+  font-size: 24px;
+  font-weight: 800;
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.checkout-button:not(:disabled):active,
+.checkout-button:not(:disabled).touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.checkout-button:not(:disabled) {
+  background: var(--yellow);
+  color: #333;
+}
+
+.checkout-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* 결제: 좌 2/3 주문 확인 · 우 1/3 결제 수단 */
+.payment-layout {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  background: #f4f4f4;
+  overflow: hidden;
+}
+
+.payment-receipt-panel {
+  padding: 24px 20px 24px 28px;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.payment-receipt-greeting-title {
+  flex-shrink: 0;
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1;
+}
+
+.payment-receipt-hint {
+  flex-shrink: 0;
+  margin: 2px 0 0;
+  padding-bottom: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-soft);
+  line-height: 1.45;
+  border-bottom: 1px solid #dddddd;
+}
+
+.payment-receipt-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.receipt-summary.payment-receipt-summary {
+  flex-shrink: 0;
+  margin-top: auto;
+  margin-bottom: 0;
+  padding-top: 14px;
+  padding-bottom: 0;
+  border-top: 1px dashed #cccccc;
+  border-bottom: none;
+}
+
+.payment-receipt-summary .summary-label {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.payment-receipt-summary strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.payment-receipt-summary .summary-right strong {
+  font-size: 22px;
+}
+
+.payment-receipt-items {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin-top: 14px;
+}
+
+.payment-cta-panel {
+  background: #f4f4f4;
+  border-left: 1px solid var(--line);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-cta-inner {
+  flex: 1;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 0;
+}
+
+.payment-cta-label {
+  flex-shrink: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0 0 6px;
+  line-height: 1;
+}
+
+.payment-cta-heading {
+  flex-shrink: 0;
+  margin: 2px 0 0;
+  padding-bottom: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-soft);
+  line-height: 1.45;
+  white-space: nowrap;
+  border-bottom: 1px solid #dddddd;
+}
+
+.payment-cta-buttons {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+  flex: 1;
+  min-height: 0;
+}
+
+.payment-cta-btn {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  border: none;
+  background: var(--yellow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px 14px;
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.payment-cta-title {
+  font-size: 23px;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+.payment-cta-sub {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brown);
+  line-height: 2;
+}
+
+.payment-cta-btn:active,
+.payment-cta-btn.touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.payment-back-cta {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 64px;
+  margin-top: 16px;
+  border-radius: 16px;
+  border: none;
+  background: #4c4c4c;
+  color: var(--surface);
+  font-size: 20px;
+  font-weight: 650;
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.payment-back-cta:active,
+.payment-back-cta.touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* 시연용 결제 완료 (전체 화면) */
+#screen-payment-complete {
+  background: #f4f4f4;
+}
+
+.payment-complete-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 32px 20px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.payment-complete-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+}
+
+.payment-complete-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  flex-shrink: 0;
+  transform: translateY(-24px);
+}
+
+.payment-complete-illustration {
+  display: block;
+  width: min(100%, 278px);
+  height: auto;
+  max-height: min(51vh, 253px);
+  margin: 0 0 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.payment-complete-title {
+  margin: 0 0 6px;
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1.25;
+}
+
+.payment-complete-note {
+  margin: 0 0 36px;
+  max-width: 440px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+
+.payment-complete-home-btn {
+  width: min(100%, 420px);
+  height: 80px;
+  border: none;
+  border-radius: 14px;
+  background: var(--yellow);
+  color: var(--text-dark);
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.payment-complete-home-btn:active,
+.payment-complete-home-btn.touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.payment-complete-countdown {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0 8px 8px;
+  width: 100%;
+  max-width: 520px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-soft);
+  line-height: 1.45;
+}
+
+/* 주문 확인 화면 */
+.receipt-screen {
+  padding: 28px;
+  height: 100%;
+  background: #f4f4f4;
+}
+
+.receipt-screen h2 {
+  margin: 0 0 18px;
+  font-size: 34px;
+  color: var(--text-dark);
+}
+
+.receipt-card {
+  background: #fefefe;
+  border-radius: 18px;
+  padding: 22px;
+  height: calc(100% - 120px);
+  overflow-y: auto;
+  border: 1px solid #dedede;
+}
+
+.receipt-summary {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px dashed #cccccc;
+  margin-bottom: 18px;
+}
+
+.summary-label {
+  display: block;
+  color: #8c8c8c;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.summary-right {
+  text-align: right;
+}
+
+.receipt-item {
+  background: #f3f3f3;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.receipt-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.receipt-item-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.receipt-item-option {
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--text-soft);
+  margin-top: 8px;
+}
+
+.receipt-item-right {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.receipt-buttons {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.modal-overlay.home-confirm-overlay {
+  z-index: 2200;
+}
+
+.modal.home-confirm-dialog {
+  width: min(440px, 92vw);
+  padding: 28px 26px 26px;
+}
+
+.home-confirm-title {
+  margin: 0 0 10px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-dark);
+  text-align: center;
+  line-height: 1.35;
+}
+
+.home-confirm-body {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.modal-footer.home-confirm-footer {
+  margin-top: 30px;
+}
+
+/* 옵션 모달 (주문 패널 등 앱 내부 z-index 위에 반드시 올라오도록) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.38);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.modal {
+  position: relative;
+  z-index: 1;
+  width: 520px;
+  background: #fefefe;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 20px 36px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.modal-header h3 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.modal-header p {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.close-button {
+  background: transparent;
+  font-size: 32px;
+  color: #888;
+}
+
+.option-group {
+  margin-bottom: 32px;
+}
+
+.option-group.disabled {
+  opacity: 0.65;
+}
+
+.option-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 14px;
+  color: var(--text-dark);
+}
+
+.option-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 8px 10px;
+  background: #f2f2f2;
+  color: #666;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+}
+
+.option-btn.active {
+  background: var(--yellow);
+  color: #4f4f4f;
+  border: 2px solid rgba(91, 82, 74, 0.3);
+  box-shadow: 0 4px 14px rgba(91, 82, 74, 0.35);
+  font-weight: 800;
+}
+
+.option-group.disabled .option-title {
+  color: #9a9a9a;
+}
+
+.option-group.disabled .option-btn,
+.option-btn:disabled {
+  background: #e3e3e3;
+  color: #9a9a9a;
+  border: 2px solid transparent;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.option-group.disabled .option-btn.active {
+  background: #dcdcdc;
+  color: #8f8f8f;
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(91, 82, 74, 0.18);
+  font-weight: 800;
+}
+
+.modal-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-footer .primary {
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.modal-footer .secondary {
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.modal-footer .secondary:active,
+.modal-footer .secondary.touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.modal-footer .primary:not(:disabled):active,
+.modal-footer .primary:not(:disabled).touch-pressed {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.modal-footer .primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
