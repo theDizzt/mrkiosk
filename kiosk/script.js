@@ -1,43 +1,43 @@
 const menuData = {
   Coffee: [
-    { id: 1, name: "아메리카노", price: 1500, image: "아메리카노.png" },
-    { id: 2, name: "카페라떼", price: 2000 },
-    { id: 3, name: "바닐라라떼", price: 2500 },
-    { id: 4, name: "연유라떼", price: 2300 },
-    { id: 5, name: "카라멜마끼아또", price: 2800 },
-    { id: 6, name: "카페모카", price: 2600 }
+    { id: 1, name: "아메리카노", price: 1500, image: "images/아메리카노.png" },
+    { id: 2, name: "카페라떼", price: 2000, image: "images/카페라떼.png" },
+    { id: 3, name: "바닐라라떼", price: 2500, image: "images/바닐라라떼.png" },
+    { id: 4, name: "연유라떼", price: 2300, image: "images/연유라떼.png" },
+    { id: 5, name: "카라멜마끼아또", price: 2800, image: "images/카라멜마끼아또.png" },
+    { id: 6, name: "카페모카", price: 2600, image: "images/카페모카.png" }
   ],
   Tea: [
-    { id: 7, name: "복숭아아이스티", price: 3500 },
-    { id: 8, name: "캐모마일티", price: 2000 },
-    { id: 9, name: "페퍼민트티", price: 2000 },
-    { id: 10, name: "얼그레이티", price: 2500 },
-    { id: 11, name: "유자티", price: 2200 },
-    { id: 12, name: "레몬티", price: 2300 }
+    { id: 7, name: "복숭아아이스티", price: 3500, image: "images/복숭아아이스티.png" },
+    { id: 8, name: "유자티", price: 2200, image: "images/유자티.png" },
+    { id: 9, name: "레몬티", price: 2300, image: "images/레몬티.png" },
+    { id: 10, name: "캐모마일티", price: 2000, image: "images/캐모마일티.png" },
+    { id: 11, name: "페퍼민트티", price: 2000, image: "images/페퍼민트티.png" },
+    { id: 12, name: "얼그레이티", price: 2500, image: "images/얼그레이티.png" }
   ],
   "Ade/Juice": [
-    { id: 13, name: "레몬에이드", price: 2800 },
-    { id: 14, name: "자몽에이드", price: 2800 },
-    { id: 15, name: "청포도에이드", price: 3000 },
-    { id: 16, name: "딸기주스", price: 2600 },
-    { id: 17, name: "오렌지주스", price: 2900 },
-    { id: 18, name: "망고주스", price: 2900 }
+    { id: 13, name: "자몽에이드", price: 2800, image: "images/자몽에이드.png" },
+    { id: 14, name: "레몬에이드", price: 2800, image: "images/레몬에이드.png" },
+    { id: 15, name: "청포도에이드", price: 3000, image: "images/청포도에이드.png" },
+    { id: 16, name: "딸기주스", price: 2600, image: "images/딸기주스.png" },
+    { id: 17, name: "오렌지주스", price: 2900, image: "images/오렌지주스.png" },
+    { id: 18, name: "망고주스", price: 2900, image: "images/망고주스.png" }
   ],
   Beverage: [
-    { id: 19, name: "초코라떼", price: 2700 },
-    { id: 20, name: "말차라떼", price: 2800 },
-    { id: 21, name: "고구마라떼", price: 2800 },
-    { id: 22, name: "딸기라떼", price: 2900 },
-    { id: 23, name: "바나나라떼", price: 3000 },
-    { id: 24, name: "블랙펄라떼", price: 2200, image: "블랙펄라떼.png" }
+    { id: 19, name: "초코라떼", price: 2700, image: "images/초코라떼.png" },
+    { id: 20, name: "말차라떼", price: 2800, image: "images/말차라떼.png" },
+    { id: 21, name: "고구마라떼", price: 2800, image: "images/고구마라떼.png" },
+    { id: 22, name: "딸기라떼", price: 2900, image: "images/딸기라떼.png" },
+    { id: 23, name: "바나나라떼", price: 3000, image: "images/바나나라떼.png" },
+    { id: 24, name: "블랙펄라떼", price: 2200, image: "images/블랙펄라떼.png" }
   ],
   Blended: [
-    { id: 25, name: "딸기스무디", price: 3200 },
-    { id: 26, name: "망고스무디", price: 3200 },
-    { id: 27, name: "블루베리스무디", price: 3500 },
-    { id: 28, name: "요거트스무디", price: 3500 },
-    { id: 29, name: "초코프라페", price: 3600 },
-    { id: 30, name: "밀크쉐이크", price: 3500 }
+    { id: 25, name: "딸기스무디", price: 3200, image: "images/딸기스무디.png" },
+    { id: 26, name: "망고스무디", price: 3200, image: "images/망고스무디.png" },
+    { id: 27, name: "블루베리스무디", price: 3500, image: "images/블루베리스무디.png" },
+    { id: 28, name: "요거트스무디", price: 3500, image: "images/요거트스무디.png" },
+    { id: 29, name: "초코프라페", price: 3600, image: "images/초코프라페.png" },
+    { id: 30, name: "밀크쉐이크", price: 3500, image: "images/밀크쉐이크.png" }
   ]
 };
 
@@ -255,7 +255,7 @@ function renderOrderSummary() {
           <div class="cart-item-option">${optionText}</div>
         </div>
         <strong class="cart-item-price">${formatPrice(item.price * item.quantity)}</strong>
-      </strong>
+      </div>
 
       <div class="cart-qty-row">
         <div class="qty-control">
