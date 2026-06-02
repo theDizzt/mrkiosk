@@ -40,7 +40,7 @@ class DualArucoDetector:
         self.detector_params = cv2.aruco.DetectorParameters()
 
         # Detector 파라미터 강화
-        ############
+        """
         self.detector_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
 
         self.detector_params.adaptiveThreshWinSizeMin = 3
@@ -53,7 +53,7 @@ class DualArucoDetector:
         self.detector_params.polygonalApproxAccuracyRate = 0.05
         self.detector_params.minCornerDistanceRate = 0.03
         self.detector_params.minDistanceToBorder = 3
-        ############
+        """
 
         self.use_new_api = hasattr(cv2.aruco, "ArucoDetector")
 
@@ -92,7 +92,7 @@ class DualArucoDetector:
         flat_ids = ids.flatten()
 
         # 디버깅용
-        print("[DETECTED IDS]", flat_ids.tolist())
+        # print("[DETECTED IDS]", flat_ids.tolist())
 
         for marker_id, marker_corners in zip(flat_ids, corners):
             markers.append(
