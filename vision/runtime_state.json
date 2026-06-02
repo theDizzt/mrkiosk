@@ -1,11 +1,11 @@
 {
   "valid": false,
-  "timestamp": 1780242899.5563216,
+  "timestamp": 1780408227.7172148,
   "tracking": {
     "reference_status": "lost",
     "state_status": "lost",
-    "reference_missing_count": 87,
-    "state_missing_count": 87
+    "reference_missing_count": 132,
+    "state_missing_count": 68
   },
   "reference": {
     "id": 769,
@@ -17,12 +17,12 @@
     "id": -1
   },
   "fsm": {
-    "state": "HOME",
-    "label": "메인 화면",
-    "state_id": 0,
+    "state": "CATEGORY_COFFEE",
+    "label": "Coffee 카테고리",
+    "state_id": 32,
     "detected_state_id": -1,
-    "target_state_id": 32,
-    "expected_id": 32,
+    "target_state_id": 64,
+    "expected_id": 64,
     "recovery": true,
     "message": "invalid_transition",
     "target": null
