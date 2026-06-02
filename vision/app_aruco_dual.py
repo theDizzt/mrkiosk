@@ -7,6 +7,10 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+import json
+import socket
+import threading
+
 from aruco_dual_detector import DualArucoDetector
 from aruco_runtime import RuntimeStabilizer, RuntimeWriter
 
@@ -19,6 +23,10 @@ from config import get_state_info
 
 from udp_sender import UdpSender
 
+# 유니티에서 실시간으로 변경될 오퍼레이터 선택 메뉴 ID (기본값은 1)
+# 이 변수가 활성화되면 FSM의 expected_route를 실시간으로 재구성합니다.
+live_menu_id = None
+fsm_rebuild_lock = threading.Lock()
 
 def load_calibration(calibration_dir: Path):
     camera_matrix_path = calibration_dir / "camera_matrix.npy"
@@ -146,9 +154,40 @@ def parse_args():
 
     return parser.parse_args()
 
+def unity_operator_receiver_loop(receive_port=5006):
+    global live_menu_id
 
+    recv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    recv_sock.bind(("0.0.0.0", receive_port))
+    print(
+        f"[OPERATOR Backend] 유니티 신호 감시 소켓 개방 완료 (Port: {receive_port})"
+    )
+
+    while True:
+        try:
+            data, addr = recv_sock.recvfrom(1024)
+            message = data.decode("utf-8")
+
+            # 유니티 타겟 셀렉터가 전송한 JSON 파싱 -> {"selected_target_id": 3}
+            parsed_json = json.loads(message)
+            menu_id = int(parsed_json.get("selected_target_id", 1))
+
+            with fsm_rebuild_lock:
+                live_menu_id = menu_id
+
+            print(
+                f"\n[오퍼레이터 원격 확정] 메뉴 가이드가 {live_menu_id}번으로 원격 변경되었습니다."
+            )
+
+        except Exception as e:
+            print(f"[OPERATOR Recv Error] 데이터 수신/파싱 실패: {e}")
 def main():
     args = parse_args()
+    operator_thread = threading.Thread(
+            target=unity_operator_receiver_loop, args=(5006,), daemon=True
+        )
+    operator_thread.start()
+
 
     calibration_dir = Path(args.calibration_dir)
     output_path = Path(args.output)
@@ -200,6 +239,28 @@ def main():
     print("[INFO] Press ESC or Q to quit")
 
     while True:
+        global live_menu_id
+        if live_menu_id is not None and live_menu_id != current_active_menu_id:
+            with fsm_rebuild_lock:
+                current_active_menu_id = live_menu_id
+                live_menu_id = None  # 신호 처리 완료 후 플래그 초기화
+
+            print(
+                f"[FSM REBUILD] {current_active_menu_id}번 메뉴 기반으로 예상 가이드 경로를 새로 고침합니다."
+            )
+
+            # 새로운 메뉴 ID 규칙에 맞춰 경로 재설정 및 FSM 엔진 초기화
+            expected_route = build_expected_route(
+                category=args.category,
+                menu_id=current_active_menu_id,  # ◀ 원격으로 주입된 라이브 ID 적용
+                temp=args.temp,
+                sweetness=args.sweetness,
+                ice=args.ice,
+            )
+            print(f"[FSM REBUILD] New Route Blueprint: {expected_route}")
+
+            # 기존 FSM 인스턴스에 새 경로 갱신
+            kiosk_fsm = KioskFSM(route=expected_route)
         ret, frame = cap.read()
 
         if not ret:

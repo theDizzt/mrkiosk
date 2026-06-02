@@ -1,11 +1,11 @@
 {
   "valid": false,
-  "timestamp": 1780408227.7172148,
+  "timestamp": 1780413955.093966,
   "tracking": {
     "reference_status": "lost",
     "state_status": "lost",
-    "reference_missing_count": 132,
-    "state_missing_count": 68
+    "reference_missing_count": 179,
+    "state_missing_count": 105
   },
   "reference": {
     "id": 769,
