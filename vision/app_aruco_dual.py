@@ -17,8 +17,8 @@ from aruco_runtime import RuntimeStabilizer, RuntimeWriter
 # 키오스크 FSM / 좌표 계산 모듈
 from marker_fsm import KioskFSM
 from kiosk_geometry import build_target_payload
-from kiosk_guide_model import get_target_for_state
-from kiosk_id_formula import build_expected_route
+from kiosk_guide_model import get_target_for_state, get_quick_order_target
+from kiosk_id_formula import build_expected_route, build_quick_order_route
 from config import get_state_info
 
 from udp_sender import UdpSender
@@ -216,17 +216,23 @@ def main():
         print(f"[INFO] UDP enabled: {args.udp_host}:{args.udp_port}")
 
     # 키오스크 상태 전이 FSM
-    expected_route = build_expected_route(
-        category=args.category,
-        menu_id=args.menu_id,
-        temp=args.temp,
-        sweetness=args.sweetness,
-        ice=args.ice,
-    )
+    if args.quick_order:
+        expected_route = build_quick_order_route(
+            menu_id=args.menu_id,
+        )
+    else:
+        expected_route = build_expected_route(
+            category=args.category,
+            menu_id=args.menu_id,
+            temp=args.temp,
+            sweetness=args.sweetness,
+            ice=args.ice,
+        )
     
     print(f"[INFO] Expected route: {expected_route}")
 
     kiosk_fsm = KioskFSM(route=expected_route)
+    current_active_menu_id = args.menu_id
 
     cap = cv2.VideoCapture(args.camera)
 
@@ -296,7 +302,11 @@ def main():
         reference_pose = runtime_state["reference"]["pose"]
 
         if reference_pose is not None:
-            target = get_target_for_state(target_state_id)
+            #target = get_target_for_state(target_state_id)
+            target = get_quick_order_target(
+                current_state_id=guide_state_id,
+                expected_state_id=target_state_id,
+            )
 
             if target is not None:
                 rvec_ref = np.array(reference_pose["rvec"], dtype=np.float32)

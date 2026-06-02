@@ -45,15 +45,29 @@ TARGET_RECTS = {
     },
 
     32: {
+    "name": "coffee_category_button",
+    "label": "Coffee 카테고리",
+    "rect": {"x": 36, "y": 90, "w": 122, "h": 56}
+    },
+    64: {
         "name": "tea_category_button",
         "label": "Tea 카테고리",
         "rect": {"x": 164, "y": 90, "w": 122, "h": 56}
     },
-
-    64: {
-        "name": "peach_ice_tea_button",
-        "label": "복숭아아이스티",
-        "rect": {"x": 36, "y": 164, "w": 196, "h": 230}
+    96: {
+        "name": "ade_juice_category_button",
+        "label": "Ade/Juice 카테고리",
+        "rect": {"x": 292, "y": 90, "w": 122, "h": 56}
+    },
+    128: {
+        "name": "beverage_category_button",
+        "label": "Beverage 카테고리",
+        "rect": {"x": 420, "y": 90, "w": 122, "h": 56}
+    },
+    160: {
+        "name": "blended_category_button",
+        "label": "Blended 카테고리",
+        "rect": {"x": 548, "y": 90, "w": 122, "h": 56}
     },
 
     260: {
@@ -86,6 +100,39 @@ TARGET_RECTS = {
         "rect": {"x": 252, "y": 310, "w": 520, "h": 84}
     }
 }
+
+
+TARGET_RECTS.update({
+    "menu_item_button": {
+        "name": "menu_item_button",
+        "label": "선택 메뉴",
+        "rect": {"x": 36, "y": 164, "w": 196, "h": 230}
+    },
+
+    "add_to_cart_button": {
+        "name": "add_to_cart_button",
+        "label": "담기",
+        "rect": {"x": 528, "y": 615, "w": 220, "h": 64}
+    },
+
+    "order_payment_button": {
+        "name": "order_payment_button",
+        "label": "결제하기",
+        "rect": {"x": 770, "y": 615, "w": 220, "h": 64}
+    },
+
+    "receipt_payment_button": {
+        "name": "receipt_payment_button",
+        "label": "주문 확인 결제하기",
+        "rect": {"x": 520, "y": 630, "w": 460, "h": 64}
+    },
+
+    "card_payment_button": {
+        "name": "card_payment_button",
+        "label": "카드 결제",
+        "rect": {"x": 252, "y": 310, "w": 520, "h": 84}
+    },
+})
 
 
 def get_state_name(state_id: int) -> str:
@@ -175,3 +222,49 @@ def get_dynamic_target_for_state(state_id: int):
         return TARGET_RECTS[768]
 
     return TARGET_RECTS.get(state_id)
+
+
+def get_quick_order_target(current_state_id: int, expected_state_id: int):
+    """
+    quick_order 데모용 target 결정 함수.
+
+    상태 ID의 실제 숫자가 달라도,
+    상태 ID가 속한 구간과 전이 관계를 보고
+    다음에 눌러야 할 버튼 위치를 일반화해서 반환한다.
+    """
+
+    # 1. 옵션창 상태에서 카테고리 화면으로 돌아가는 경우
+    # 예: 260 → 64, 292 → 64, 292 → 96
+    # 이 전이는 '담기' 버튼을 눌러야 발생함
+    if 256 <= current_state_id < 448 and expected_state_id in [32, 64, 96, 128, 160]:
+        return TARGET_RECTS.get("add_to_cart_button") or TARGET_RECTS.get(256)
+
+    # 2. 카테고리 선택 단계
+    # 예: 0 → 32, 32 → 64, 32 → 96, 32 → 128, 32 → 160
+    if expected_state_id in [32, 64, 96, 128, 160]:
+        return TARGET_RECTS.get(expected_state_id)
+
+    # 3. 메뉴 클릭 후 옵션창으로 진입하는 단계
+    # 예: 64 → 260, 64 → 292, 96 → 292
+    # 이때는 해당 카테고리 안의 '메뉴 버튼'을 눌러야 함
+    if 256 <= expected_state_id < 448:
+        return TARGET_RECTS.get("menu_item_button")
+
+    # 4. 주문 확인 화면으로 넘어가는 단계
+    # 예: 64 → 536, 64 → 540, 96 → 564
+    # 이때는 카테고리 화면의 '결제하기' 버튼을 눌러야 함
+    if 512 <= expected_state_id < 632:
+        return TARGET_RECTS.get("order_payment_button") or TARGET_RECTS.get(536)
+
+    # 5. 결제 방식 선택 화면으로 넘어가는 단계
+    # 예: 536 → 768, 540 → 768, 564 → 768
+    # 이때는 주문 확인 화면의 '결제하기' 버튼 위치가 같음
+    if expected_state_id == 768:
+        return TARGET_RECTS.get("receipt_payment_button") or TARGET_RECTS.get(768)
+
+    # 6. 결제 완료 후 HOME 복귀
+    # 보통 카드 결제 버튼 안내
+    if expected_state_id == 0:
+        return TARGET_RECTS.get("card_payment_button") or TARGET_RECTS.get(0)
+
+    return get_target_for_state(expected_state_id)
