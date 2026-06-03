@@ -147,5 +147,9 @@ def build_target_payload(rvec_ref, tvec_ref, target, rvec_state=None, tvec_state
         "rect_px": rect,
         "center_px": center,
         "world_position": world_position,
-        "world_size": world_size
+        "world_size": world_size,
+        "scale": {
+            "x": float(scale_x),
+            "y": float(scale_y),
+        }
     }

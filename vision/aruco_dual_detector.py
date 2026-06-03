@@ -167,9 +167,13 @@ class DualArucoDetector:
         )
 
         reference_pose = None
+        state_pose = None
 
         if reference_marker is not None:
             reference_pose = self.estimate_pose(reference_marker)
+
+        if state_marker is not None:
+            state_pose = self.estimate_pose(state_marker)
 
         state_marker_id = state_marker.marker_id if state_marker is not None else None
 
@@ -179,6 +183,7 @@ class DualArucoDetector:
             "state_marker": state_marker,
             "state_candidates": state_candidates,
             "reference_pose": reference_pose,
+            "state_pose": state_pose,
             "state_marker_id": state_marker_id,
         }
 
@@ -225,6 +230,21 @@ class DualArucoDetector:
                 rvec,
                 tvec,
                 self.marker_length_m * 0.7,
+            )
+        
+        state_pose = result.get("state_pose")
+
+        if state_pose is not None:
+            rvec = np.array(state_pose["rvec"], dtype=np.float32).reshape(3, 1)
+            tvec = np.array(state_pose["tvec"], dtype=np.float32).reshape(3, 1)
+
+            cv2.drawFrameAxes(
+                output,
+                self.camera_matrix,
+                self.dist_coeffs,
+                rvec,
+                tvec,
+                self.marker_length_m * 0.5,
             )
 
         return output

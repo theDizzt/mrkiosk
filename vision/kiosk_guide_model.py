@@ -103,30 +103,87 @@ TARGET_RECTS = {
 
 
 TARGET_RECTS.update({
-    "menu_item_button": {
-        "name": "menu_item_button",
-        "label": "선택 메뉴",
-        "rect": {"x": 36, "y": 164, "w": 196, "h": 230}
+    # 카테고리 버튼
+    32: {
+        "name": "coffee_category_button",
+        "label": "Coffee 카테고리",
+        "rect": {"x": 18, "y": 90, "w": 123, "h": 56}
+    },
+    64: {
+        "name": "tea_category_button",
+        "label": "Tea 카테고리",
+        "rect": {"x": 149, "y": 90, "w": 123, "h": 56}
+    },
+    96: {
+        "name": "ade_juice_category_button",
+        "label": "Ade/Juice 카테고리",
+        "rect": {"x": 280, "y": 90, "w": 123, "h": 56}
+    },
+    128: {
+        "name": "beverage_category_button",
+        "label": "Beverage 카테고리",
+        "rect": {"x": 411, "y": 90, "w": 123, "h": 56}
+    },
+    160: {
+        "name": "blended_category_button",
+        "label": "Blended 카테고리",
+        "rect": {"x": 542, "y": 90, "w": 123, "h": 56}
     },
 
+    # 메뉴 카드 6개, menu_hash 0~5
+    "menu_item_0": {
+        "name": "menu_item_0",
+        "label": "1번째 메뉴",
+        "rect": {"x": 18, "y": 162, "w": 204, "h": 261}
+    },
+    "menu_item_1": {
+        "name": "menu_item_1",
+        "label": "2번째 메뉴",
+        "rect": {"x": 240, "y": 162, "w": 204, "h": 261}
+    },
+    "menu_item_2": {
+        "name": "menu_item_2",
+        "label": "3번째 메뉴",
+        "rect": {"x": 461, "y": 162, "w": 204, "h": 261}
+    },
+    "menu_item_3": {
+        "name": "menu_item_3",
+        "label": "4번째 메뉴",
+        "rect": {"x": 18, "y": 441, "w": 204, "h": 261}
+    },
+    "menu_item_4": {
+        "name": "menu_item_4",
+        "label": "5번째 메뉴",
+        "rect": {"x": 240, "y": 441, "w": 204, "h": 261}
+    },
+    "menu_item_5": {
+        "name": "menu_item_5",
+        "label": "6번째 메뉴",
+        "rect": {"x": 461, "y": 441, "w": 204, "h": 261}
+    },
+
+    # 옵션 모달의 담기 버튼
     "add_to_cart_button": {
         "name": "add_to_cart_button",
         "label": "담기",
-        "rect": {"x": 528, "y": 615, "w": 220, "h": 64}
+        "rect": {"x": 518, "y": 520, "w": 230, "h": 64}
     },
 
+    # 메뉴 화면 우측 결제하기 버튼
     "order_payment_button": {
         "name": "order_payment_button",
         "label": "결제하기",
-        "rect": {"x": 770, "y": 615, "w": 220, "h": 64}
+        "rect": {"x": 705, "y": 630, "w": 297, "h": 68}
     },
 
+    # 주문 확인 화면 결제하기 버튼
     "receipt_payment_button": {
         "name": "receipt_payment_button",
         "label": "주문 확인 결제하기",
-        "rect": {"x": 520, "y": 630, "w": 460, "h": 64}
+        "rect": {"x": 526, "y": 629, "w": 470, "h": 64}
     },
 
+    # 카드 결제 버튼
     "card_payment_button": {
         "name": "card_payment_button",
         "label": "카드 결제",
@@ -248,7 +305,12 @@ def get_quick_order_target(current_state_id: int, expected_state_id: int):
     # 예: 64 → 260, 64 → 292, 96 → 292
     # 이때는 해당 카테고리 안의 '메뉴 버튼'을 눌러야 함
     if 256 <= expected_state_id < 448:
-        return TARGET_RECTS.get("menu_item_button")
+        menu_hash = (expected_state_id - 256) // 32
+
+        if 0 <= menu_hash <= 5:
+            return TARGET_RECTS.get(f"menu_item_{menu_hash}")
+
+        return None
 
     # 4. 주문 확인 화면으로 넘어가는 단계
     # 예: 64 → 536, 64 → 540, 96 → 564

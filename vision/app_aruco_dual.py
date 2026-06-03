@@ -149,6 +149,13 @@ def parse_args():
         help="Ice amount option",
     )
 
+    parser.add_argument(
+        "--quick-order",
+        action="store_true",
+        default=True,
+        help="Use quick order demo route",
+    )
+
     parser.add_argument("--udp-host", type=str, default=None)
     parser.add_argument("--udp-port", type=int, default=5005)
 
@@ -216,6 +223,7 @@ def main():
         print(f"[INFO] UDP enabled: {args.udp_host}:{args.udp_port}")
 
     # 키오스크 상태 전이 FSM
+    """
     if args.quick_order:
         expected_route = build_quick_order_route(
             menu_id=args.menu_id,
@@ -228,7 +236,11 @@ def main():
             sweetness=args.sweetness,
             ice=args.ice,
         )
-    
+    """
+    expected_route = build_quick_order_route(
+        menu_id=args.menu_id,
+    )
+
     print(f"[INFO] Expected route: {expected_route}")
 
     kiosk_fsm = KioskFSM(route=expected_route)
@@ -256,6 +268,7 @@ def main():
             )
 
             # 새로운 메뉴 ID 규칙에 맞춰 경로 재설정 및 FSM 엔진 초기화
+            """
             expected_route = build_expected_route(
                 category=args.category,
                 menu_id=current_active_menu_id,  # ◀ 원격으로 주입된 라이브 ID 적용
@@ -263,6 +276,12 @@ def main():
                 sweetness=args.sweetness,
                 ice=args.ice,
             )
+            """
+
+            expected_route = build_quick_order_route(
+                menu_id=current_active_menu_id,
+            )
+            
             print(f"[FSM REBUILD] New Route Blueprint: {expected_route}")
 
             # 기존 FSM 인스턴스에 새 경로 갱신
@@ -302,7 +321,6 @@ def main():
         reference_pose = runtime_state["reference"]["pose"]
 
         if reference_pose is not None:
-            #target = get_target_for_state(target_state_id)
             target = get_quick_order_target(
                 current_state_id=guide_state_id,
                 expected_state_id=target_state_id,
@@ -312,10 +330,21 @@ def main():
                 rvec_ref = np.array(reference_pose["rvec"], dtype=np.float32)
                 tvec_ref = np.array(reference_pose["tvec"], dtype=np.float32)
 
+                state_pose = result.get("state_pose")
+
+                rvec_state = None
+                tvec_state = None
+
+                if state_pose is not None:
+                    rvec_state = np.array(state_pose["rvec"], dtype=np.float32)
+                    tvec_state = np.array(state_pose["tvec"], dtype=np.float32)
+
                 target_payload = build_target_payload(
                     rvec_ref=rvec_ref,
                     tvec_ref=tvec_ref,
                     target=target,
+                    rvec_state=rvec_state,
+                    tvec_state=tvec_state,
                     marker_length=args.marker_length,
                 )
 
