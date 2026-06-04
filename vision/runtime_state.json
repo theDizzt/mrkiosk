@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
   "valid": false,
   "timestamp": 1780242619.4696314,
   "tracking": {
@@ -6,17 +7,43 @@
     "state_status": "lost",
     "reference_missing_count": 292,
     "state_missing_count": 101
+=======
+  "valid": true,
+  "timestamp": 1780614976.4902012,
+  "tracking": {
+    "reference_status": "detected",
+    "state_status": "detected",
+    "reference_missing_count": 0,
+    "state_missing_count": 0
+>>>>>>> Stashed changes
   },
   "reference": {
     "id": 769,
-    "detected": false,
-    "pose": null
+    "detected": true,
+    "pose": {
+      "rvec": [
+        2.985935979065999,
+        0.019378485592591383,
+        0.07102241237810474
+      ],
+      "tvec": [
+        -0.2846971302593589,
+        -0.27897773308335655,
+        1.4056352166949588
+      ],
+      "marker_center": [
+        173.5,
+        110.0
+      ],
+      "marker_area": 871.0
+    }
   },
   "state_marker": {
-    "detected": false,
-    "id": -1
+    "detected": true,
+    "id": 64
   },
   "fsm": {
+<<<<<<< Updated upstream
     "state": "HOME",
     "label": "메인 화면",
     "state_id": 0,
@@ -26,5 +53,27 @@
     "recovery": true,
     "message": "invalid_transition",
     "target": null
+=======
+    "state": "CATEGORY_TEA",
+    "label": "Tea 카테고리",
+    "state_id": 64,
+    "detected_state_id": 64,
+    "target_state_id": 260,
+    "expected_id": 260,
+    "recovery": false,
+    "message": "same_state",
+    "target": {
+      "world_position": {
+        "x": -0.01396593451499939,
+        "y": -0.6048915982246399,
+        "z": 1.469655990600586
+      },
+      "world_size": {
+        "w": 0.1171875,
+        "h": 0.037500000000000006
+      },
+      "label": "덜 달게"
+    }
+>>>>>>> Stashed changes
   }
 }
