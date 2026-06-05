@@ -5,12 +5,26 @@ public class GlowRingGuideController : MonoBehaviour
     [Header("References")]
     public RuntimeStateReader runtimeStateReader;
     public UdpRuntimeStateReceiver udpReceiver;
+
+    [Tooltip("실제로 움직일 글로우 링 오브젝트")]
     public Transform glowRing;
 
-    [Header("Input Mode")]
-    public bool useUdp = false;
+    [Tooltip("키오스크 화면 기준 부모 오브젝트. 보통 KioskScreen 또는 KioskAnchor")]
+    public Transform kioskScreenRoot;
 
-    [Header("Movement")]
+    [Header("Input Mode")]
+    public bool useUdp = true;
+
+    [Header("Kiosk Screen Pixel Settings")]
+    public float screenWidth = 1024f;
+    public float screenHeight = 720f;
+
+    [Header("Unity Plane Size")]
+    public float planeWidth = 1.0f;
+    public float planeHeight = 0.703125f; // 720 / 1024
+
+    [Header("Guide Visual Settings")]
+    public float zOffset = 0.01f;
     public float moveSpeed = 6.0f;
     public float scaleFactor = 1.2f;
 
@@ -18,14 +32,28 @@ public class GlowRingGuideController : MonoBehaviour
     public Color normalColor = new Color(1.0f, 0.373f, 0.082f); // #FF5F15
     public Color recoveryColor = Color.red;
 
+    [Header("Debug")]
+    public bool printDebugLog = true;
+
     private Renderer ringRenderer;
+    private string lastTargetName = "";
 
     private void Start()
     {
-        if (glowRing != null)
+        if (glowRing == null)
         {
-            ringRenderer = glowRing.GetComponent<Renderer>();
+            Debug.LogWarning("[GlowRingGuide] glowRing is not assigned.");
+            return;
         }
+
+        ringRenderer = glowRing.GetComponent<Renderer>();
+
+        if (kioskScreenRoot != null)
+        {
+            glowRing.SetParent(kioskScreenRoot, false);
+        }
+
+        glowRing.localRotation = Quaternion.identity;
     }
 
     private void Update()
@@ -35,9 +63,78 @@ public class GlowRingGuideController : MonoBehaviour
             return;
         }
 
-        Vector3 targetPosition;
-        Vector2 targetSize;
+        float x;
+        float y;
+        float w;
+        float h;
         bool recovery;
+        string targetName;
+
+        bool hasTarget = TryGetTargetRect(
+            out x,
+            out y,
+            out w,
+            out h,
+            out recovery,
+            out targetName
+        );
+
+        if (!hasTarget)
+        {
+            return;
+        }
+
+        Vector3 targetLocalPosition = RectPxToLocalPosition(x, y, w, h);
+        Vector3 targetLocalScale = RectPxToLocalScale(w, h);
+
+        glowRing.localPosition = Vector3.Lerp(
+            glowRing.localPosition,
+            targetLocalPosition,
+            Time.deltaTime * moveSpeed
+        );
+
+        glowRing.localScale = Vector3.Lerp(
+            glowRing.localScale,
+            targetLocalScale,
+            Time.deltaTime * moveSpeed
+        );
+
+        glowRing.localRotation = Quaternion.identity;
+
+        if (ringRenderer != null)
+        {
+            ringRenderer.material.color = recovery ? recoveryColor : normalColor;
+        }
+
+        if (printDebugLog && targetName != lastTargetName)
+        {
+            Debug.Log(
+                "[GlowRingGuide]\n" +
+                "target: " + targetName + "\n" +
+                "rect_px: (" + x + ", " + y + ", " + w + ", " + h + ")\n" +
+                "localPosition: " + targetLocalPosition + "\n" +
+                "localScale: " + targetLocalScale
+            );
+
+            lastTargetName = targetName;
+        }
+    }
+
+    private bool TryGetTargetRect(
+        out float x,
+        out float y,
+        out float w,
+        out float h,
+        out bool recovery,
+        out string targetName
+    )
+    {
+        x = 0f;
+        y = 0f;
+        w = 0f;
+        h = 0f;
+        recovery = false;
+        targetName = "NO_TARGET";
 
         if (useUdp)
         {
@@ -46,57 +143,72 @@ public class GlowRingGuideController : MonoBehaviour
                 udpReceiver.latestState == null ||
                 udpReceiver.latestState.fsm == null ||
                 udpReceiver.latestState.fsm.target == null ||
-                udpReceiver.latestState.fsm.target.world_position == null ||
-                udpReceiver.latestState.fsm.target.world_size == null
+                udpReceiver.latestState.fsm.target.rect_px == null
             )
             {
-                return;
+                return false;
             }
 
-            targetPosition = new Vector3(
-                udpReceiver.latestState.fsm.target.world_position.x,
-                -udpReceiver.latestState.fsm.target.world_position.y,
-                udpReceiver.latestState.fsm.target.world_position.z
-            );
+            var target = udpReceiver.latestState.fsm.target;
+            var rect = target.rect_px;
 
-            targetSize = new Vector2(
-                udpReceiver.latestState.fsm.target.world_size.w,
-                udpReceiver.latestState.fsm.target.world_size.h
-            );
-
+            x = rect.x;
+            y = rect.y;
+            w = rect.w;
+            h = rect.h;
             recovery = udpReceiver.latestState.fsm.recovery;
+            targetName = target.name;
+
+            return true;
         }
-        else
+
+        if (
+            runtimeStateReader == null ||
+            runtimeStateReader.CurrentState == null ||
+            runtimeStateReader.CurrentState.fsm == null ||
+            runtimeStateReader.CurrentState.fsm.target == null ||
+            runtimeStateReader.CurrentState.fsm.target.rect_px == null
+        )
         {
-            if (
-                runtimeStateReader == null ||
-                runtimeStateReader.CurrentState == null ||
-                !runtimeStateReader.HasTargetRect()
-            )
-            {
-                return;
-            }
-
-            targetPosition = runtimeStateReader.GetTargetWorldPosition();
-            targetSize = runtimeStateReader.GetTargetWorldSize();
-            recovery = runtimeStateReader.IsRecoveryMode();
+            return false;
         }
 
-        glowRing.position = Vector3.Lerp(
-            glowRing.position,
-            targetPosition,
-            Time.deltaTime * moveSpeed
-        );
+        TargetData jsonTarget = runtimeStateReader.CurrentState.fsm.target;
+        RectPx jsonRect = jsonTarget.rect_px;
 
-        glowRing.localScale = new Vector3(
-            targetSize.x * scaleFactor,
-            targetSize.y * scaleFactor,
+        x = jsonRect.x;
+        y = jsonRect.y;
+        w = jsonRect.w;
+        h = jsonRect.h;
+        recovery = runtimeStateReader.IsRecoveryMode();
+        targetName = jsonTarget.name;
+
+        return true;
+    }
+
+    private Vector3 RectPxToLocalPosition(float x, float y, float width, float height)
+    {
+        float centerX = x + width * 0.5f;
+        float centerY = y + height * 0.5f;
+
+        float normalizedX = centerX / screenWidth;
+        float normalizedY = centerY / screenHeight;
+
+        float localX = (normalizedX - 0.5f) * planeWidth;
+        float localY = (0.5f - normalizedY) * planeHeight;
+
+        return new Vector3(localX, localY, zOffset);
+    }
+
+    private Vector3 RectPxToLocalScale(float width, float height)
+    {
+        float localWidth = (width / screenWidth) * planeWidth;
+        float localHeight = (height / screenHeight) * planeHeight;
+
+        return new Vector3(
+            localWidth * scaleFactor,
+            localHeight * scaleFactor,
             1.0f
         );
-
-        if (ringRenderer != null)
-        {
-            ringRenderer.material.color = recovery ? recoveryColor : normalColor;
-        }
     }
 }

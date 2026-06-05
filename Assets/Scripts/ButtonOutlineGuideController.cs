@@ -15,11 +15,11 @@ public class ButtonOutlineGuideController : MonoBehaviour
     public Transform rightBar;
 
     [Header("Kiosk Screen Settings")]
-    public float screenWidth = 1920f;
-    public float screenHeight = 1080f;
+    public float screenWidth = 1024f;
+    public float screenHeight = 720f;
 
     public float planeWidth = 1.0f;
-    public float planeHeight = 0.5625f;
+    public float planeHeight = 0.703125f;
 
     [Header("Guide Visual Settings")]
     public float borderThickness = 0.015f;
@@ -118,8 +118,11 @@ public class ButtonOutlineGuideController : MonoBehaviour
 
     private void UpdateGuideRect(float x, float y, float width, float height)
     {
-        float normalizedX = x / screenWidth;
-        float normalizedY = y / screenHeight;
+        float centerX = x + width * 0.5f;
+        float centerY = y + height * 0.5f;
+
+        float normalizedX = centerX / screenWidth;
+        float normalizedY = centerY / screenHeight;
 
         float localX = (normalizedX - 0.5f) * planeWidth;
         float localY = (0.5f - normalizedY) * planeHeight;
