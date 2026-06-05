@@ -217,17 +217,7 @@ def build_target_payload(rvec_ref, tvec_ref, target, rvec_state=None, tvec_state
     world_pos = transform_pixel_to_world(center, rvec_ref, tvec_ref, scale_x, scale_y)
 
     return {
-<<<<<<< Updated upstream
-        "name": target.get("name", "unknown_target"),
-        "label": target.get("label", ""),
-        "rect_px": rect,
-        "center_px": center,
-        "world_position": world_position,
-        "world_size": world_size
-    }
-=======
         "world_position": world_pos,
         "world_size": rect_size_to_world_size(rect, scale_x, scale_y),
         "label": target.get("label", "Target")
     }
->>>>>>> Stashed changes

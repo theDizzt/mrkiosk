@@ -39,6 +39,22 @@ class DualArucoDetector:
         self.aruco_dict = self._load_dictionary(dictionary_name)
         self.detector_params = cv2.aruco.DetectorParameters()
 
+        # Detector 파라미터 강화
+        """
+        self.detector_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
+
+        self.detector_params.adaptiveThreshWinSizeMin = 3
+        self.detector_params.adaptiveThreshWinSizeMax = 53
+        self.detector_params.adaptiveThreshWinSizeStep = 4
+
+        self.detector_params.minMarkerPerimeterRate = 0.015
+        self.detector_params.maxMarkerPerimeterRate = 4.0
+
+        self.detector_params.polygonalApproxAccuracyRate = 0.05
+        self.detector_params.minCornerDistanceRate = 0.03
+        self.detector_params.minDistanceToBorder = 3
+        """
+
         self.use_new_api = hasattr(cv2.aruco, "ArucoDetector")
 
         if self.use_new_api:
@@ -74,6 +90,9 @@ class DualArucoDetector:
         markers: List[DetectedMarker] = []
 
         flat_ids = ids.flatten()
+
+        # 디버깅용
+        # print("[DETECTED IDS]", flat_ids.tolist())
 
         for marker_id, marker_corners in zip(flat_ids, corners):
             markers.append(
@@ -148,9 +167,13 @@ class DualArucoDetector:
         )
 
         reference_pose = None
+        state_pose = None
 
         if reference_marker is not None:
             reference_pose = self.estimate_pose(reference_marker)
+
+        if state_marker is not None:
+            state_pose = self.estimate_pose(state_marker)
 
         state_marker_id = state_marker.marker_id if state_marker is not None else None
 
@@ -160,6 +183,7 @@ class DualArucoDetector:
             "state_marker": state_marker,
             "state_candidates": state_candidates,
             "reference_pose": reference_pose,
+            "state_pose": state_pose,
             "state_marker_id": state_marker_id,
         }
 
@@ -206,6 +230,21 @@ class DualArucoDetector:
                 rvec,
                 tvec,
                 self.marker_length_m * 0.7,
+            )
+        
+        state_pose = result.get("state_pose")
+
+        if state_pose is not None:
+            rvec = np.array(state_pose["rvec"], dtype=np.float32).reshape(3, 1)
+            tvec = np.array(state_pose["tvec"], dtype=np.float32).reshape(3, 1)
+
+            cv2.drawFrameAxes(
+                output,
+                self.camera_matrix,
+                self.dist_coeffs,
+                rvec,
+                tvec,
+                self.marker_length_m * 0.5,
             )
 
         return output

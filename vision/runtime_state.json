@@ -1,79 +1,57 @@
 {
-<<<<<<< Updated upstream
-  "valid": false,
-  "timestamp": 1780242619.4696314,
-  "tracking": {
-    "reference_status": "lost",
-    "state_status": "lost",
-    "reference_missing_count": 292,
-    "state_missing_count": 101
-=======
   "valid": true,
-  "timestamp": 1780614976.4902012,
+  "timestamp": 1780642300.8579018,
   "tracking": {
     "reference_status": "detected",
     "state_status": "detected",
     "reference_missing_count": 0,
     "state_missing_count": 0
->>>>>>> Stashed changes
   },
   "reference": {
     "id": 769,
     "detected": true,
     "pose": {
       "rvec": [
-        2.985935979065999,
-        0.019378485592591383,
-        0.07102241237810474
+        2.6815881920477094,
+        -0.09571616701879214,
+        -0.6217491732206797
       ],
       "tvec": [
-        -0.2846971302593589,
-        -0.27897773308335655,
-        1.4056352166949588
+        -0.5920035528944344,
+        -0.3547890663610172,
+        1.9072942566874533
       ],
       "marker_center": [
-        173.5,
-        110.0
+        83.0,
+        120.0
       ],
-      "marker_area": 871.0
+      "marker_area": 308.0
     }
   },
   "state_marker": {
     "detected": true,
-    "id": 64
+    "id": 0
   },
   "fsm": {
-<<<<<<< Updated upstream
     "state": "HOME",
     "label": "메인 화면",
     "state_id": 0,
-    "detected_state_id": -1,
+    "detected_state_id": 0,
     "target_state_id": 32,
     "expected_id": 32,
-    "recovery": true,
-    "message": "invalid_transition",
-    "target": null
-=======
-    "state": "CATEGORY_TEA",
-    "label": "Tea 카테고리",
-    "state_id": 64,
-    "detected_state_id": 64,
-    "target_state_id": 260,
-    "expected_id": 260,
     "recovery": false,
     "message": "same_state",
     "target": {
       "world_position": {
-        "x": -0.01396593451499939,
-        "y": -0.6048915982246399,
-        "z": 1.469655990600586
+        "x": -0.5601471066474915,
+        "y": -0.4190710186958313,
+        "z": 1.9178746938705444
       },
       "world_size": {
-        "w": 0.1171875,
-        "h": 0.037500000000000006
+        "w": 0.09609375,
+        "h": 0.043750000000000004
       },
-      "label": "덜 달게"
+      "label": "Coffee 카테고리"
     }
->>>>>>> Stashed changes
   }
 }

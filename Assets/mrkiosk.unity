@@ -227,8 +227,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 105338898}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-<<<<<<< Updated upstream
-=======
 --- !u!1 &166413705
 GameObject:
   m_ObjectHideFlags: 0
@@ -386,7 +384,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
->>>>>>> Stashed changes
 --- !u!1 &408303323
 GameObject:
   m_ObjectHideFlags: 0
@@ -402,7 +399,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &408303324
 Transform:
   m_ObjectHideFlags: 0
@@ -978,6 +975,7 @@ GameObject:
   - component: {fileID: 2038728505}
   - component: {fileID: 2038728504}
   - component: {fileID: 2038728503}
+  - component: {fileID: 2038728508}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -997,12 +995,9 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-<<<<<<< Updated upstream
-  m_Children: []
-=======
   m_Children:
   - {fileID: 199323650}
->>>>>>> Stashed changes
+  - {fileID: 2127726019}
   m_Father: {fileID: 2106053034}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2038728503
@@ -1197,6 +1192,23 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &2038728508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038728501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f9d1e23eb9441444a8cd4c8259a77b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hologramTextObject: {fileID: 199323649}
+  targetTextMesh: {fileID: 199323651}
+  currentTargetId: 0
+  pythonIpAddress: 192.168.200.100
+  pythonPort: 5006
 --- !u!1 &2040528778
 GameObject:
   m_ObjectHideFlags: 0
@@ -1226,14 +1238,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0421879c156f055428c8464a02daf656, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  runtimeStateReader: {fileID: 1252184046}
+  useUdp: 1
   udpReceiver: {fileID: 1321389776}
-  glowRing: {fileID: 408303324}
-  useUdp: 0
-  moveSpeed: 6
+  runtimeStateReader: {fileID: 1252184046}
+  glowRing: {fileID: 2127726019}
+  positionScale: 1
   scaleFactor: 1.2
-  normalColor: {r: 1, g: 0.373, b: 0.082, a: 1}
-  recoveryColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!4 &2040528780
 Transform:
   m_ObjectHideFlags: 0
@@ -1344,8 +1354,6 @@ Transform:
   - {fileID: 2038728502}
   m_Father: {fileID: 2070371502}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-<<<<<<< Updated upstream
-=======
 --- !u!1 &2127726015
 GameObject:
   m_ObjectHideFlags: 0
@@ -1446,13 +1454,12 @@ Transform:
   m_GameObject: {fileID: 2127726015}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.00913763, y: 0.026188374, z: -0.00913763}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2038728502}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
->>>>>>> Stashed changes
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1462,6 +1469,5 @@ SceneRoots:
   - {fileID: 1252184047}
   - {fileID: 408303324}
   - {fileID: 2040528780}
-  - {fileID: 2127726019}
   - {fileID: 1321389777}
   - {fileID: 166413708}

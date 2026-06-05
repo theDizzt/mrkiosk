@@ -3,62 +3,31 @@ using UnityEngine;
 
 public class GlowRingGuideController : MonoBehaviour
 {
-    [Header("References")]
-    public RuntimeStateReader runtimeStateReader;
+    [Header("Data Source Settings")]
+    public bool useUdp = true;
     public UdpRuntimeStateReceiver udpReceiver;
+    public RuntimeStateReader runtimeStateReader;
+
+    [Header("Target Object")]
     public Transform glowRing;
 
-    [Header("Input Mode")]
-    public bool useUdp = false;
-
-    [Header("Movement")]
-    public float moveSpeed = 6.0f;
-    public float scaleFactor = 1.2f;
-
-    [Header("Colors")]
-    public Color normalColor = new Color(1.0f, 0.373f, 0.082f); // #FF5F15
-    public Color recoveryColor = Color.red;
-
-    private Renderer ringRenderer;
-
-    private void Start()
-    {
-        if (glowRing != null)
-        {
-            ringRenderer = glowRing.GetComponent<Renderer>();
-        }
-    }
+    [Header("Adjustment Settings")]
+    [Tooltip("파이썬 미터 좌표 축 연산 배율 (기본값 1.0)")]
+    public float positionScale = 1.0f;
+    [Tooltip("링 크기 스케일 배율 (기본값 1.0)")]
+    public float scaleFactor = 1.0f;
 
     private void Update()
     {
-        if (glowRing == null)
-        {
-            return;
-        }
+        Vector3 targetPosition = Vector3.zero;
+        Vector2 targetSize = Vector2.one;
+        bool hasData = false;
 
-        Vector3 targetPosition;
-        Vector2 targetSize;
-        bool recovery;
-
-<<<<<<< Updated upstream
-        if (useUdp)
-=======
         // 1. UDP 또는 파일 리더를 통해 실시간 파이썬 마커 데이터 동기화
 if (useUdp)
->>>>>>> Stashed changes
         {
-            if (
-                udpReceiver == null ||
-                udpReceiver.latestState == null ||
-                udpReceiver.latestState.fsm == null ||
-                udpReceiver.latestState.fsm.target == null ||
-                udpReceiver.latestState.fsm.target.world_position == null ||
-                udpReceiver.latestState.fsm.target.world_size == null
-            )
+            if (udpReceiver != null && udpReceiver.latestState != null && udpReceiver.latestState.valid)
             {
-<<<<<<< Updated upstream
-                return;
-=======
                 var fsm = udpReceiver.latestState.fsm;
                 if (fsm != null)
                 {
@@ -104,55 +73,18 @@ if (useUdp)
                     }
                     hasData = true;
                 }
->>>>>>> Stashed changes
             }
-
-            targetPosition = new Vector3(
-                udpReceiver.latestState.fsm.target.world_position.x,
-                -udpReceiver.latestState.fsm.target.world_position.y,
-                udpReceiver.latestState.fsm.target.world_position.z
-            );
-
-            targetSize = new Vector2(
-                udpReceiver.latestState.fsm.target.world_size.w,
-                udpReceiver.latestState.fsm.target.world_size.h
-            );
-
-            recovery = udpReceiver.latestState.fsm.recovery;
         }
         else
         {
-            if (
-                runtimeStateReader == null ||
-                runtimeStateReader.CurrentState == null ||
-                !runtimeStateReader.HasTargetRect()
-            )
+            if (runtimeStateReader != null && runtimeStateReader.CurrentState != null && runtimeStateReader.HasTargetRect())
             {
-                return;
+                targetPosition = runtimeStateReader.GetTargetWorldPosition();
+                targetSize = runtimeStateReader.GetTargetWorldSize();
+                hasData = true;
             }
-
-            targetPosition = runtimeStateReader.GetTargetWorldPosition();
-            targetSize = runtimeStateReader.GetTargetWorldSize();
-            recovery = runtimeStateReader.IsRecoveryMode();
         }
 
-<<<<<<< Updated upstream
-        glowRing.position = Vector3.Lerp(
-            glowRing.position,
-            targetPosition,
-            Time.deltaTime * moveSpeed
-        );
-
-        glowRing.localScale = new Vector3(
-            targetSize.x * scaleFactor,
-            targetSize.y * scaleFactor,
-            1.0f
-        );
-
-        if (ringRenderer != null)
-        {
-            ringRenderer.material.color = recovery ? recoveryColor : normalColor;
-=======
         // 2. 오브젝트 트랜스폼 연산 및 렌더링 스위칭
         if (glowRing != null)
         {
@@ -174,7 +106,6 @@ if (useUdp)
             {
                 glowRing.gameObject.SetActive(false);
             }
->>>>>>> Stashed changes
         }
     }
 }

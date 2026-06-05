@@ -7,35 +7,29 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-<<<<<<< Updated upstream
-=======
 import json
 import socket
 import threading
 import time
 
->>>>>>> Stashed changes
 from aruco_dual_detector import DualArucoDetector
 from aruco_runtime import RuntimeStabilizer, RuntimeWriter
 
 # 키오스크 FSM / 좌표 계산 모듈
 from marker_fsm import KioskFSM
 from kiosk_geometry import build_target_payload
-from kiosk_guide_model import get_target_for_state
-from kiosk_id_formula import build_expected_route
+from kiosk_guide_model import get_target_for_state, get_quick_order_target
+from kiosk_id_formula import build_expected_route, build_quick_order_route
 from config import get_state_info
 
 from udp_sender import UdpSender
 
-<<<<<<< Updated upstream
-=======
 # ==============================================================================
 # [오퍼레이터 연동용 글로벌 변수 및 백그라운드 수신 스레드]
 # ==============================================================================
 # 유니티 타겟 셀렉터가 전송할 실시간 라이브 메뉴 ID (기본값 None)
 live_menu_id = None
 fsm_rebuild_lock = threading.Lock()
->>>>>>> Stashed changes
 
 
 def unity_operator_receiver_loop(receive_port=5006):
@@ -127,7 +121,7 @@ def parse_args():
     parser.add_argument(
         "--dict",
         type=str,
-        default="DICT_5X5_1000",
+        default="DICT_4X4_1000",
         help="OpenCV ArUco dictionary name",
     )
 
@@ -199,8 +193,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-<<<<<<< Updated upstream
-=======
 
     # --------------------------------------------------------------------------
     # [1단계] 유니티 오퍼레이터 수신 백엔드 서버 스레드 가동
@@ -209,7 +201,6 @@ def main():
         target=unity_operator_receiver_loop, args=(5006,), daemon=True
     )
     operator_thread.start()
->>>>>>> Stashed changes
 
     calibration_dir = Path(args.calibration_dir)
     output_path = Path(args.output)
@@ -237,16 +228,6 @@ def main():
         udp_sender = UdpSender(args.udp_host, args.udp_port)
         print(f"[INFO] UDP enabled: {args.udp_host}:{args.udp_port}")
 
-<<<<<<< Updated upstream
-    # 키오스크 상태 전이 FSM
-    expected_route = build_expected_route(
-        category=args.category,
-        menu_id=args.menu_id,
-        temp=args.temp,
-        sweetness=args.sweetness,
-        ice=args.ice,
-    )
-=======
     # 초기 가이드라인 분기 경로 생성
     if args.quick_order:
         expected_route = build_quick_order_route(
@@ -261,7 +242,6 @@ def main():
             sweetness=args.sweetness,
             ice=args.ice,
         )
->>>>>>> Stashed changes
     
     print(f"[INFO] Expected route: {expected_route}")
 
@@ -284,8 +264,6 @@ def main():
     last_print_time = 0.0
 
     while True:
-<<<<<<< Updated upstream
-=======
         # ----------------------------------------------------------------------
         # [2단계] 유니티가 보낸 라이브 메뉴 변경 요청을 실시간으로 캐치하여 리빌드
         # ----------------------------------------------------------------------
@@ -315,7 +293,6 @@ def main():
             print(f"[FSM DYNAMIC REBUILD] 새로 설계된 가이드 블루프린트: {expected_route}")
             kiosk_fsm = KioskFSM(route=expected_route)
 
->>>>>>> Stashed changes
         ret, frame = cap.read()
 
         if not ret:
@@ -344,23 +321,6 @@ def main():
         target_payload = None
         reference_pose = runtime_state["reference"]["pose"]
 
-<<<<<<< Updated upstream
-        if reference_pose is not None:
-            target = get_target_for_state(target_state_id)
-
-            if target is not None:
-                rvec_ref = np.array(reference_pose["rvec"], dtype=np.float32)
-                tvec_ref = np.array(reference_pose["tvec"], dtype=np.float32)
-
-                target_payload = build_target_payload(
-                    rvec_ref=rvec_ref,
-                    tvec_ref=tvec_ref,
-                    target=target,
-                    marker_length=args.marker_length,
-                )
-
-        # fsm 결과 확장
-=======
         if reference_pose is not None and target is not None:
             rvec_ref = np.array(reference_pose["rvec"], dtype=np.float32)
             tvec_ref = np.array(reference_pose["tvec"], dtype=np.float32)
@@ -377,7 +337,6 @@ def main():
                 rvec_state=rvec_state, tvec_state=tvec_state, marker_length=args.marker_length
             )
 
->>>>>>> Stashed changes
         runtime_state["fsm"] = {
             "state": state_info["name"], "label": state_info["label"], "state_id": guide_state_id,
             "detected_state_id": detected_state_id, "target_state_id": target_state_id,
