@@ -82,7 +82,13 @@ public class GlowRingGuideController : MonoBehaviour
 
         if (!hasTarget)
         {
-            glowRing.gameObject.SetActive(false);
+            //glowRing.gameObject.SetActive(false);
+                Debug.LogWarning("[GlowRingGuide] No target rect. Showing fallback ring at center.");
+                
+                glowRing.gameObject.SetActive(true);
+                glowRing.localPosition = new Vector3(0f, 0f, zOffset);
+                glowRing.localScale = new Vector3(0.2f, 0.2f, 1.0f);
+
             return;
         }
 
