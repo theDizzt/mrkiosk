@@ -1,4 +1,3 @@
-// Assets/Scripts/GlowRingGuideController.cs
 using UnityEngine;
 
 public class GlowRingGuideController : MonoBehaviour
@@ -11,101 +10,117 @@ public class GlowRingGuideController : MonoBehaviour
     [Header("Target Object")]
     public Transform glowRing;
 
+    [Header("Movement")]
+    public bool useLocalPosition = true;
+    public float moveLerpSpeed = 8.0f;
+
     [Header("Adjustment Settings")]
-    [Tooltip("파이썬 미터 좌표 축 연산 배율 (기본값 1.0)")]
-    public float positionScale = 1.0f;
-    [Tooltip("링 크기 스케일 배율 (기본값 1.0)")]
+    [Tooltip("파이썬 좌표계 보정 배율")]
+    public Vector3 coordinateScale = Vector3.one;
+
+    [Tooltip("파이썬 좌표계 보정 오프셋")]
+    public Vector3 positionOffset = Vector3.zero;
+
+    [Tooltip("링 크기 스케일 배율")]
     public float scaleFactor = 1.0f;
+
+    [Header("Axis Mapping")]
+    public bool invertY = true;
 
     private void Update()
     {
-        Vector3 targetPosition = Vector3.zero;
-        Vector2 targetSize = Vector2.one;
-        bool hasData = false;
-
-        // 1. UDP 또는 파일 리더를 통해 실시간 파이썬 마커 데이터 동기화
-if (useUdp)
+        if (glowRing == null)
         {
-            if (udpReceiver != null && udpReceiver.latestState != null && udpReceiver.latestState.valid)
-            {
-                var fsm = udpReceiver.latestState.fsm;
-                if (fsm != null)
-                {
-                    // 파이썬 비전 엔진이 인식한 실시간 마커 ID 판독
-                    int currentMarkerId = fsm.detected_state_id;
+            return;
+        }
 
-                    // 🎯 오퍼레이터 실측 기반: 우리 실험실의 완벽한 2번째 정답 축 베이스 (Z: 1.93m 보정)
-                    float baseX = -0.001f; 
-                    float baseY = -0.468f;  
-                    float baseZ = 1.930f;  
+        Vector3 targetPosition;
+        Vector2 targetSize;
+        bool hasData = TryGetTarget(out targetPosition, out targetSize);
 
-                    // 마커 번호 변경에 맞춰 유니티 가상 공간 상에서 원의 위치를 완벽하게 강제 텔레포트
-                    switch (currentMarkerId)
-                    {
-                        // 1. 메인 홈 화면 (0번 마커) ➔ 화면 정중앙 배치
-                        case 0:
-                            targetPosition = new Vector3(baseX, baseY, baseZ);
-                            break;
+        if (!hasData)
+        {
+            glowRing.gameObject.SetActive(false);
+            return;
+        }
 
-                        // 2. 커피 카테고리 화면 (32번 마커) ➔ 화면 상단 탭으로 원 이동 (+Y)
-                        case 32:
-                            targetPosition = new Vector3(baseX, baseY + 0.189f, baseZ);
-                            break;
+        glowRing.gameObject.SetActive(true);
 
-                        // 3. 블렌디드 옵션 상세창 (420번 마커) ➔ 화면 우측 하단 장바구니 버튼 이동 (+X, -Y)
-                        case 420:
-                            targetPosition = new Vector3(baseX + 0.319f, baseY - 0.100f, baseZ);
-                            break;
+        Vector3 calibratedPosition = new Vector3(
+            targetPosition.x * coordinateScale.x,
+            targetPosition.y * coordinateScale.y,
+            targetPosition.z * coordinateScale.z
+        ) + positionOffset;
 
-                        // 4. 최종 결제 방식 선택 화면 (768번 마커) ➔ 로그에 찍힌 물리 좌표 그대로 이동
-                        case 768:
-                            targetPosition = new Vector3(0.040f, -0.557f, 1.371f);
-                            break;
-
-                        default:
-                            targetPosition = new Vector3(baseX, baseY, baseZ);
-                            break;
-                    }
-
-                    if (fsm.target != null && fsm.target.world_size != null)
-                    {
-                        targetSize = new Vector2(fsm.target.world_size.w, fsm.target.world_size.h);
-                    }
-                    hasData = true;
-                }
-            }
+        if (useLocalPosition)
+        {
+            glowRing.localPosition = Vector3.Lerp(
+                glowRing.localPosition,
+                calibratedPosition,
+                Time.deltaTime * moveLerpSpeed
+            );
         }
         else
         {
-            if (runtimeStateReader != null && runtimeStateReader.CurrentState != null && runtimeStateReader.HasTargetRect())
-            {
-                targetPosition = runtimeStateReader.GetTargetWorldPosition();
-                targetSize = runtimeStateReader.GetTargetWorldSize();
-                hasData = true;
-            }
+            glowRing.position = Vector3.Lerp(
+                glowRing.position,
+                calibratedPosition,
+                Time.deltaTime * moveLerpSpeed
+            );
         }
 
-        // 2. 오브젝트 트랜스폼 연산 및 렌더링 스위칭
-        if (glowRing != null)
+        glowRing.localScale = new Vector3(
+            targetSize.x * scaleFactor,
+            targetSize.y * scaleFactor,
+            1.0f
+        );
+    }
+
+    private bool TryGetTarget(out Vector3 targetPosition, out Vector2 targetSize)
+    {
+        targetPosition = Vector3.zero;
+        targetSize = Vector2.one;
+
+        if (useUdp)
         {
-            if (hasData)
+            if (
+                udpReceiver == null ||
+                udpReceiver.latestState == null ||
+                !udpReceiver.latestState.valid ||
+                udpReceiver.latestState.fsm == null ||
+                udpReceiver.latestState.fsm.target == null ||
+                udpReceiver.latestState.fsm.target.world_position == null ||
+                udpReceiver.latestState.fsm.target.world_size == null
+            )
             {
-                glowRing.gameObject.SetActive(true);
-                
-                // 보정된 타겟 좌표를 링에 대입
-                glowRing.localPosition = targetPosition * positionScale;
+                return false;
+            }
 
-                // 크기도 화면 스케일에 맞춰 부드럽게 매칭
-                glowRing.localScale = new Vector3(
-                    targetSize.x * scaleFactor,
-                    targetSize.y * scaleFactor,
-                    1.0f
-                );
-            }
-            else
-            {
-                glowRing.gameObject.SetActive(false);
-            }
+            var pos = udpReceiver.latestState.fsm.target.world_position;
+            var size = udpReceiver.latestState.fsm.target.world_size;
+
+            targetPosition = new Vector3(
+                pos.x,
+                invertY ? -pos.y : pos.y,
+                pos.z
+            );
+
+            targetSize = new Vector2(size.w, size.h);
+            return true;
         }
+
+        if (
+            runtimeStateReader == null ||
+            runtimeStateReader.CurrentState == null ||
+            !runtimeStateReader.HasTargetRect()
+        )
+        {
+            return false;
+        }
+
+        targetPosition = runtimeStateReader.GetTargetWorldPosition();
+        targetSize = runtimeStateReader.GetTargetWorldSize();
+
+        return true;
     }
 }
