@@ -304,7 +304,7 @@ def get_quick_order_target(current_state_id: int, expected_state_id: int):
 
     # 4. 주문 확인 화면으로 넘어가는 단계 ('결제하기' 버튼 안내)
     if 512 <= expected_state_id < 632:
-        # 🚨 중요: order_payment_button이나 receipt_payment_button이 누락되었을 때 536번 기본 좌표로 자동 복구
+        # 중요: order_payment_button이나 receipt_payment_button이 누락되었을 때 536번 기본 좌표로 자동 복구
         return TARGET_RECTS.get("order_payment_button") or TARGET_RECTS.get("receipt_payment_button") or TARGET_RECTS.get(536)
 
     # 5. 결제 방식 선택 화면으로 넘어가는 단계 (주문 확인창의 '결제하기' 버튼 안내)

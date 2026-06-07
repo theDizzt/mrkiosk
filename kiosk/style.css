@@ -114,8 +114,8 @@ button {
 }
 
 .primary {
-  background: #4c4c4c;
-  color: #fefefe;
+  background: #F2DB69;
+  color: #000000;
 }
 
 .secondary {
@@ -581,7 +581,7 @@ button {
 .marker-id-debug {
   position: fixed;
   right: 24px;
-  bottom: 24px;
+  top: 24px;
 
   padding: 10px 16px;
   background: #222;
