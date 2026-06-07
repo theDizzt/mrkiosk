@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument(
         "--dict",
         type=str,
-        default="DICT_5X5_1000",
+        default="DICT_4X4_1000",
         help="OpenCV ArUco dictionary name",
     )
 

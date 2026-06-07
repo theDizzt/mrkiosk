@@ -1,19 +1,19 @@
+// Assets/Scripts/GlowRingGuideController.cs
 using UnityEngine;
 
 public class GlowRingGuideController : MonoBehaviour
 {
-    [Header("References")]
-    public RuntimeStateReader runtimeStateReader;
+    [Header("Data Source Settings")]
+    public bool useUdp = true;
     public UdpRuntimeStateReceiver udpReceiver;
+    public RuntimeStateReader runtimeStateReader;
 
+    [Header("Target Object")]
     [Tooltip("실제로 움직일 글로우 링 오브젝트")]
     public Transform glowRing;
 
     [Tooltip("키오스크 화면 기준 부모 오브젝트. 보통 KioskScreen 또는 KioskAnchor")]
     public Transform kioskScreenRoot;
-
-    [Header("Input Mode")]
-    public bool useUdp = true;
 
     [Header("Kiosk Screen Pixel Settings")]
     public float screenWidth = 1024f;
@@ -54,6 +54,7 @@ public class GlowRingGuideController : MonoBehaviour
         }
 
         glowRing.localRotation = Quaternion.identity;
+        glowRing.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -81,8 +82,11 @@ public class GlowRingGuideController : MonoBehaviour
 
         if (!hasTarget)
         {
+            glowRing.gameObject.SetActive(false);
             return;
         }
+
+        glowRing.gameObject.SetActive(true);
 
         Vector3 targetLocalPosition = RectPxToLocalPosition(x, y, w, h);
         Vector3 targetLocalScale = RectPxToLocalScale(w, h);
@@ -141,6 +145,7 @@ public class GlowRingGuideController : MonoBehaviour
             if (
                 udpReceiver == null ||
                 udpReceiver.latestState == null ||
+                !udpReceiver.latestState.valid ||
                 udpReceiver.latestState.fsm == null ||
                 udpReceiver.latestState.fsm.target == null ||
                 udpReceiver.latestState.fsm.target.rect_px == null
@@ -165,6 +170,7 @@ public class GlowRingGuideController : MonoBehaviour
         if (
             runtimeStateReader == null ||
             runtimeStateReader.CurrentState == null ||
+            !runtimeStateReader.CurrentState.valid ||
             runtimeStateReader.CurrentState.fsm == null ||
             runtimeStateReader.CurrentState.fsm.target == null ||
             runtimeStateReader.CurrentState.fsm.target.rect_px == null
