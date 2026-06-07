@@ -285,9 +285,11 @@ def get_dynamic_target_for_state(state_id: int):
 
 def get_quick_order_target(current_state_id: int, expected_state_id: int):
     """
-    quick_order 데모용 target 결정 함수 (안전 가이드 패치 적용)
+    quick_order 데모용 target 결정 함수.
+    상태 ID 구간과 전이 관계를 보고 다음에 눌러야 할 버튼 위치를 반환한다.
     """
-    # 1. 옵션창 상태에서 카테고리 화면으로 돌아가는 경우 ('담기' 버튼 안내)
+
+    # 1. 옵션창 상태에서 카테고리 화면으로 돌아가는 경우: 담기 버튼
     if 256 <= current_state_id < 448 and expected_state_id in [32, 64, 96, 128, 160]:
         return TARGET_RECTS.get("add_to_cart_button") or TARGET_RECTS.get(256)
 
@@ -295,43 +297,7 @@ def get_quick_order_target(current_state_id: int, expected_state_id: int):
     if expected_state_id in [32, 64, 96, 128, 160]:
         return TARGET_RECTS.get(expected_state_id) or TARGET_RECTS.get(32)
 
-    # 3. 메뉴 클릭 후 옵션창으로 진입하는 단계 (카테고리 안의 '메뉴 카드' 버튼 안내)
-    if 256 <= expected_state_id < 448:
-        menu_hash = (expected_state_id - 256) // 32
-        if 0 <= menu_hash <= 5:
-            return TARGET_RECTS.get(f"menu_item_{menu_hash}") or TARGET_RECTS.get(260)
-        return TARGET_RECTS.get(260)
-
-    # 4. 주문 확인 화면으로 넘어가는 단계 ('결제하기' 버튼 안내)
-    if 512 <= expected_state_id < 632:
-        # 중요: order_payment_button이나 receipt_payment_button이 누락되었을 때 536번 기본 좌표로 자동 복구
-        return TARGET_RECTS.get("order_payment_button") or TARGET_RECTS.get("receipt_payment_button") or TARGET_RECTS.get(536)
-
-    # 5. 결제 방식 선택 화면으로 넘어가는 단계 (주문 확인창의 '결제하기' 버튼 안내)
-    if expected_state_id == 768:
-        return TARGET_RECTS.get("receipt_payment_button") or TARGET_RECTS.get(768)
-
-    # 6. 결제 완료 후 HOME 복귀 (카드 결제 버튼 안내)
-    if expected_state_id == 0:
-        return TARGET_RECTS.get("card_payment_button") or TARGET_RECTS.get(768) or TARGET_RECTS.get(0)
-
-    # 7. 예외 안전장치: 위의 모든 조건에 걸리지 않으면 수치 기반 기본 타겟 리턴
-    return get_target_for_state(expected_state_id)    
-
-    # 1. 옵션창 상태에서 카테고리 화면으로 돌아가는 경우
-    # 예: 260 → 64, 292 → 64, 292 → 96
-    # 이 전이는 '담기' 버튼을 눌러야 발생함
-    if 256 <= current_state_id < 448 and expected_state_id in [32, 64, 96, 128, 160]:
-        return TARGET_RECTS.get("add_to_cart_button") or TARGET_RECTS.get(256)
-
-    # 2. 카테고리 선택 단계
-    # 예: 0 → 32, 32 → 64, 32 → 96, 32 → 128, 32 → 160
-    if expected_state_id in [32, 64, 96, 128, 160]:
-        return TARGET_RECTS.get(expected_state_id)
-
-    # 3. 메뉴 클릭 후 옵션창으로 진입하는 단계
-    # 예: 64 → 260, 64 → 292, 96 → 292
-    # 이때는 해당 카테고리 안의 '메뉴 버튼'을 눌러야 함
+    # 3. 메뉴 클릭 후 옵션창으로 진입하는 단계: 메뉴 카드 6개 중 하나
     if 256 <= expected_state_id < 448:
         menu_hash = (expected_state_id - 256) // 32
 
@@ -340,20 +306,19 @@ def get_quick_order_target(current_state_id: int, expected_state_id: int):
 
         return None
 
-    # 4. 주문 확인 화면으로 넘어가는 단계
-    # 예: 64 → 536, 64 → 540, 96 → 564
-    # 이때는 카테고리 화면의 '결제하기' 버튼을 눌러야 함
+    # 4. 주문 확인 화면으로 넘어가는 단계: 메뉴 화면 우측 결제하기 버튼
     if 512 <= expected_state_id < 632:
-        return TARGET_RECTS.get("order_payment_button") or TARGET_RECTS.get(536)
+        return (
+            TARGET_RECTS.get("order_payment_button")
+            or TARGET_RECTS.get("receipt_payment_button")
+            or TARGET_RECTS.get(536)
+        )
 
-    # 5. 결제 방식 선택 화면으로 넘어가는 단계
-    # 예: 536 → 768, 540 → 768, 564 → 768
-    # 이때는 주문 확인 화면의 '결제하기' 버튼 위치가 같음
+    # 5. 결제 방식 선택 화면으로 넘어가는 단계: 주문 확인 화면 결제하기 버튼
     if expected_state_id == 768:
         return TARGET_RECTS.get("receipt_payment_button") or TARGET_RECTS.get(768)
 
-    # 6. 결제 완료 후 HOME 복귀
-    # 보통 카드 결제 버튼 안내
+    # 6. 결제 완료 후 HOME 복귀: 카드 결제 버튼
     if expected_state_id == 0:
         return TARGET_RECTS.get("card_payment_button") or TARGET_RECTS.get(0)
 
