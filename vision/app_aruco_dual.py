@@ -1,5 +1,7 @@
 # vision/app_aruco_dual.py
-# python vision/app_aruco_dual.py --reference-id 769 --show
+# 실행 예시:
+# python vision/app_aruco_dual.py --reference-id 769 --menu-id 7 --marker-length 0.0125 --show
+# python vision/app_aruco_dual.py --reference-id 769 --menu-id 8 --marker-length 0.0125 --show
 
 import argparse
 from pathlib import Path
@@ -17,8 +19,8 @@ from aruco_runtime import RuntimeStabilizer, RuntimeWriter
 
 from marker_fsm import KioskFSM
 from kiosk_geometry import build_target_payload
-from kiosk_guide_model import get_quick_order_target
-from kiosk_id_formula import build_expected_route, build_quick_order_route
+from kiosk_guide_model import get_quick_order_target, get_recovery_target
+from kiosk_id_formula import build_quick_order_route
 from config import get_state_info
 
 from udp_sender import UdpSender
@@ -33,10 +35,20 @@ fsm_rebuild_lock = threading.Lock()
 
 
 def unity_operator_receiver_loop(receive_port=5006):
+    """
+    유니티 컨트롤러 또는 TargetSelector에서 menu_id를 UDP로 보내면
+    Python 쪽 FSM route를 즉시 재생성하기 위한 수신 루프.
+
+    예상 수신 JSON:
+    {
+        "selected_target_id": 7
+    }
+    """
     global live_menu_id
 
     recv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     recv_sock.bind(("0.0.0.0", receive_port))
+
     print(f"[OPERATOR Backend] 유니티 신호 감시 소켓 개방 완료 (Port: {receive_port})")
 
     while True:
@@ -50,7 +62,7 @@ def unity_operator_receiver_loop(receive_port=5006):
             with fsm_rebuild_lock:
                 live_menu_id = menu_id
 
-            print(f"\n[★ 오퍼레이터 원격 확정] 메뉴 가이드가 {live_menu_id}번으로 원격 변경되었습니다.")
+            print(f"\n[오퍼레이터 원격 확정] 메뉴 가이드가 {live_menu_id}번으로 변경되었습니다.")
 
         except Exception as e:
             print(f"[OPERATOR Recv Error] 데이터 수신/파싱 실패: {e}")
@@ -77,7 +89,9 @@ def load_calibration(calibration_dir: Path):
             break
 
     if dist_path is None:
-        raise FileNotFoundError(f"distortion coefficient file not found in: {calibration_dir}")
+        raise FileNotFoundError(
+            f"distortion coefficient file not found in: {calibration_dir}"
+        )
 
     camera_matrix = np.load(camera_matrix_path)
     dist_coeffs = np.load(dist_path)
@@ -86,7 +100,9 @@ def load_calibration(calibration_dir: Path):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Dual ArUco detector for MR Kiosk")
+    parser = argparse.ArgumentParser(
+        description="Dual ArUco detector for MR Kiosk"
+    )
 
     parser.add_argument(
         "--camera",
@@ -99,7 +115,7 @@ def parse_args():
         "--reference-id",
         type=int,
         required=True,
-        help="Reference ArUco marker ID. State IDs are not defined here.",
+        help="Reference ArUco marker ID. Usually 769.",
     )
 
     parser.add_argument(
@@ -137,71 +153,43 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--category",
-        type=str,
-        default="Tea",
-        help="Order category: Coffee, Tea, Ade/Juice, Beverage, Blended",
-    )
-
-    parser.add_argument(
         "--menu-id",
         type=int,
-        default=7,
-        help="Menu ID from kiosk menu data",
+        default=1,
+        help="Menu ID from kiosk menu data. 1~30.",
     )
 
     parser.add_argument(
-        "--temp",
+        "--udp-host",
         type=str,
-        default="ICED",
-        choices=["ICED", "HOT"],
-        help="Temperature option",
+        default=None,
+        help="Unity UDP receiver host. Example: 127.0.0.1",
     )
 
     parser.add_argument(
-        "--sweetness",
-        type=str,
-        default="보통",
-        choices=["덜 달게", "보통", "달게"],
-        help="Sweetness option",
-    )
-
-    parser.add_argument(
-        "--ice",
-        type=str,
-        default="얼음 보통",
-        choices=["얼음 많이", "얼음 보통", "얼음 적게"],
-        help="Ice amount option",
-    )
-
-    parser.add_argument("--udp-host", type=str, default=None)
-    parser.add_argument("--udp-port", type=int, default=5005)
-
-    parser.add_argument(
-        "--quick-order",
-        action="store_true",
-        help="Quick order mode. 옵션 변경 없이 기본 옵션으로 바로 담는 데모 모드.",
+        "--udp-port",
+        type=int,
+        default=5005,
+        help="Unity UDP receiver port.",
     )
 
     return parser.parse_args()
 
 
-def build_route_from_args(args, menu_id):
-    if args.quick_order:
-        return build_quick_order_route(menu_id=menu_id)
-
-    return build_expected_route(
-        category=args.category,
-        menu_id=menu_id,
-        temp=args.temp,
-        sweetness=args.sweetness,
-        ice=args.ice,
-    )
+def build_route_from_menu_id(menu_id: int):
+    """
+    현재 단계에서는 옵션 선택을 제외한다.
+    menu_id만 기반으로 기본 옵션창 진입 후 바로 담기 route를 만든다.
+    """
+    return build_quick_order_route(menu_id=menu_id)
 
 
 def main():
     args = parse_args()
 
+    # --------------------------------------------------------------------------
+    # 유니티 오퍼레이터 메뉴 선택 수신 스레드 시작
+    # --------------------------------------------------------------------------
     operator_thread = threading.Thread(
         target=unity_operator_receiver_loop,
         args=(5006,),
@@ -235,7 +223,9 @@ def main():
         udp_sender = UdpSender(args.udp_host, args.udp_port)
         print(f"[INFO] UDP enabled: {args.udp_host}:{args.udp_port}")
 
-    expected_route = build_route_from_args(args, args.menu_id)
+    current_active_menu_id = args.menu_id
+
+    expected_route = build_route_from_menu_id(current_active_menu_id)
     print(f"[INFO] Expected route: {expected_route}")
 
     kiosk_fsm = KioskFSM(route=expected_route)
@@ -251,23 +241,22 @@ def main():
     print(f"[INFO] Output: {output_path}")
     print("[INFO] Press ESC or Q to quit")
 
-    current_active_menu_id = args.menu_id
     last_print_time = 0.0
 
     global live_menu_id
 
     while True:
         # ----------------------------------------------------------------------
-        # 유니티 오퍼레이터가 메뉴를 바꾼 경우 FSM route 재생성
+        # 유니티 컨트롤러에서 menu_id가 변경되면 route 재생성
         # ----------------------------------------------------------------------
         if live_menu_id is not None and live_menu_id != current_active_menu_id:
             with fsm_rebuild_lock:
                 current_active_menu_id = live_menu_id
                 live_menu_id = None
 
-            print(f"\n[FSM DYNAMIC REBUILD] 메뉴 경로를 {current_active_menu_id}번 메뉴 기준으로 갱신합니다.")
+            print(f"\n[FSM DYNAMIC REBUILD] {current_active_menu_id}번 메뉴 기준으로 route를 갱신합니다.")
 
-            expected_route = build_route_from_args(args, current_active_menu_id)
+            expected_route = build_route_from_menu_id(current_active_menu_id)
             print(f"[FSM DYNAMIC REBUILD] 새 route: {expected_route}")
 
             kiosk_fsm = KioskFSM(route=expected_route)
@@ -294,7 +283,8 @@ def main():
         state_info = get_state_info(guide_state_id)
 
         # 중요:
-        # expected_id가 0이면 Python에서 False로 취급되므로 "or guide_state_id"를 쓰면 안 됨.
+        # expected_id가 0이면 Python에서 False로 처리되므로
+        # "or guide_state_id"를 쓰면 안 된다.
         expected_id = fsm_result.get("expected_id")
         target_state_id = expected_id if expected_id is not None else guide_state_id
 
@@ -302,10 +292,16 @@ def main():
         # detected_state_id는 순간 인식값이고,
         # guide_state_id는 FSM이 인정한 현재 상태다.
         # target 선택은 guide_state_id 기준으로 해야 안정적이다.
-        target = get_quick_order_target(
-            current_state_id=guide_state_id,
-            expected_state_id=target_state_id,
-        )
+        if fsm_result.get("recovery"):
+            target = get_recovery_target(
+                current_state_id=guide_state_id,
+                detected_state_id=detected_state_id,
+            )
+        else:
+            target = get_quick_order_target(
+                current_state_id=guide_state_id,
+                expected_state_id=target_state_id,
+            )
 
         target_payload = None
         reference_pose = runtime_state["reference"]["pose"]
@@ -364,7 +360,7 @@ def main():
             print("=" * 64)
             print(" [MR Kiosk 비전 엔지니어링 실시간 모니터링]")
             print("=" * 64)
-            print(f" ▷ 현재 가동 모드      : {'퀵 오더 데모 모드' if args.quick_order else '일반 인터랙션 모드'}")
+            print(" ▷ 현재 가동 모드      : 메뉴 ID 자동 가이드 모드")
             print(f" ▷ 현재 메뉴 번호      : {current_active_menu_id}번")
             print(f" ▷ 현재 FSM 상태 ID    : {guide_state_id} ({state_info['name']})")
             print(f" ▷ 카메라 인식 마커 ID : {detected_state_id if detected_state_id != -1 else '미감지 (-1)'}")

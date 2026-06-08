@@ -1,11 +1,11 @@
 {
   "valid": false,
-  "timestamp": 1780927611.475683,
+  "timestamp": 1780932052.6874268,
   "tracking": {
     "reference_status": "lost",
-    "state_status": "held",
-    "reference_missing_count": 92,
-    "state_missing_count": 2
+    "state_status": "lost",
+    "reference_missing_count": 4585,
+    "state_missing_count": 4588
   },
   "reference": {
     "id": 769,
@@ -14,13 +14,13 @@
   },
   "state_marker": {
     "detected": false,
-    "id": 190
+    "id": -1
   },
   "fsm": {
     "state": "HOME",
     "label": "메인 화면",
     "state_id": 0,
-    "detected_state_id": 190,
+    "detected_state_id": -1,
     "target_state_id": 32,
     "expected_id": 32,
     "recovery": true,

@@ -26,19 +26,6 @@ STATE_MAP = {
     768: "PAYMENT_SELECT",
 }
 
-EXPECTED_ROUTE = [
-    0,
-    32,
-    64,
-    260,
-    257,
-    256,
-    64,
-    536,
-    768,
-    0,
-]
-
 
 # ==============================================================================
 # 1024 x 720 키오스크 CSS 기준 버튼 좌표
@@ -115,7 +102,6 @@ TARGET_RECTS = {
     },
 
     # 메뉴 카드 6개, menu_hash 0~5
-    # 복숭아 아이스티가 menu_id 7이라면 Tea 카테고리의 첫 번째 메뉴이므로 menu_hash = 0
     "menu_item_0": {
         "name": "menu_item_0",
         "label": "1번째 메뉴",
@@ -148,6 +134,8 @@ TARGET_RECTS = {
     },
 
     # 옵션 모달 버튼
+    # 지금 단계에서는 옵션 선택을 사용하지 않지만,
+    # 나중에 옵션 기능 붙일 때 재사용 가능.
     "less_sweet_button": {
         "name": "less_sweet_button",
         "label": "덜 달게",
@@ -250,72 +238,19 @@ def get_menu_card_target_from_option_state(expected_state_id: int):
     return None
 
 
-def get_option_change_target(current_state_id: int, expected_state_id: int):
-    """
-    옵션창 내부에서 current option state -> expected option state로 갈 때
-    실제로 눌러야 하는 옵션 버튼을 반환한다.
-
-    예시:
-    260 -> 257 : 덜 달게
-    257 -> 256 : 얼음 많이
-    """
-
-    if not (is_option_state(current_state_id) and is_option_state(expected_state_id)):
-        return None
-
-    current = parse_option_state(current_state_id)
-    expected = parse_option_state(expected_state_id)
-
-    # 메뉴가 바뀌는 경우는 옵션창 내부 전이로 보지 않음
-    if current["menu_hash"] != expected["menu_hash"]:
-        return get_menu_card_target_from_option_state(expected_state_id)
-
-    # 당도 변경
-    if current["sweet"] != expected["sweet"]:
-        if expected["sweet"] == 0:
-            return TARGET_RECTS.get("less_sweet_button")
-
-        # 아직 좌표를 등록하지 않았다면 fallback
-        if expected["sweet"] == 1:
-            return TARGET_RECTS.get("normal_sweet_button")
-        if expected["sweet"] == 2:
-            return TARGET_RECTS.get("more_sweet_button")
-
-    # 얼음 변경
-    if current["ice"] != expected["ice"]:
-        if expected["ice"] == 0:
-            return TARGET_RECTS.get("more_ice_button")
-
-        # 아직 좌표를 등록하지 않았다면 fallback
-        if expected["ice"] == 1:
-            return TARGET_RECTS.get("normal_ice_button")
-        if expected["ice"] == 2:
-            return TARGET_RECTS.get("less_ice_button")
-
-    # 온도 변경 좌표를 나중에 추가할 경우 사용
-    if current["temp"] != expected["temp"]:
-        if expected["temp"] == 0:
-            return TARGET_RECTS.get("iced_button")
-        if expected["temp"] == 1:
-            return TARGET_RECTS.get("hot_button")
-
-    return None
-
-
 def get_target_for_state(state_id: int):
     """
     단일 state_id만 보고 target을 반환하는 fallback 함수.
-    정확한 시나리오 안내는 get_quick_order_target(current, expected)을 사용해야 한다.
+    정확한 안내는 get_quick_order_target(current, expected)을 사용해야 한다.
     """
 
     if state_id == 0:
         return TARGET_RECTS.get(0)
 
-    if state_id in CATEGORY_IDS:
+    if is_category_state(state_id):
         return TARGET_RECTS.get(state_id)
 
     if is_option_state(state_id):
-        # 단일 state_id만으로는 메뉴 클릭인지 옵션 변경인지 구분 불가
         return get_menu_card_target_from_option_state(state_id)
 
     if is_receipt_state(state_id):
@@ -330,6 +265,43 @@ def get_target_for_state(state_id: int):
 def get_dynamic_target_for_state(state_id: int):
     return get_target_for_state(state_id)
 
+def get_recovery_target(current_state_id: int, detected_state_id: int = None):
+    """
+    잘못된 상태 마커가 인식되었을 때,
+    FSM이 인정한 현재 상태로 돌아가기 위한 버튼을 반환한다.
+
+    예:
+    current_state_id = 32, detected_state_id = 128
+    → Coffee 버튼을 눌러 32 상태로 복귀해야 함
+    """
+
+    if current_state_id is None or current_state_id < 0:
+        return None
+
+    # HOME으로 복구
+    if current_state_id == 0:
+        return TARGET_RECTS.get(0)
+
+    # 카테고리 상태로 복구
+    # 예: 현재 FSM은 Coffee(32)인데 사용자가 Beverage(128)를 눌렀다면
+    # 다시 Coffee 버튼을 안내
+    if is_category_state(current_state_id):
+        return TARGET_RECTS.get(current_state_id)
+
+    # 옵션 상태로 복구
+    # 옵션창 상태를 다시 만들려면 해당 메뉴 카드를 다시 누르게 안내
+    if is_option_state(current_state_id):
+        return get_menu_card_target_from_option_state(current_state_id)
+
+    # 주문 확인 상태로 복구
+    if is_receipt_state(current_state_id):
+        return TARGET_RECTS.get("order_payment_button")
+
+    # 결제 방식 선택 상태로 복구
+    if current_state_id == 768:
+        return TARGET_RECTS.get("receipt_payment_button")
+
+    return get_target_for_state(current_state_id)
 
 def get_quick_order_target(current_state_id: int, expected_state_id: int):
     """
@@ -346,7 +318,6 @@ def get_quick_order_target(current_state_id: int, expected_state_id: int):
         target은 '그 상태로 가기 위해 지금 눌러야 하는 버튼'이다.
     """
 
-    # 상태 마커가 아직 없거나 target을 만들 수 없는 경우
     if current_state_id is None or current_state_id < 0:
         return None
 
@@ -370,23 +341,18 @@ def get_quick_order_target(current_state_id: int, expected_state_id: int):
         return TARGET_RECTS.get("order_payment_button")
 
     # 4. 옵션창에서 카테고리 화면으로 돌아가는 경우: 담기 버튼
+    # 현재 quick route에서는 기본 옵션창 진입 후 바로 이 조건으로 담기 안내
     if is_option_state(current_state_id) and is_category_state(expected_state_id):
         return TARGET_RECTS.get("add_to_cart_button")
 
-    # 5. 옵션창 내부에서 옵션을 변경하는 경우
-    if is_option_state(current_state_id) and is_option_state(expected_state_id):
-        option_target = get_option_change_target(current_state_id, expected_state_id)
-        if option_target is not None:
-            return option_target
-
-    # 6. 카테고리 화면에서 메뉴 카드를 눌러 옵션창으로 들어가는 경우
+    # 5. 카테고리 화면에서 메뉴 카드를 눌러 옵션창으로 들어가는 경우
     if is_category_state(current_state_id) and is_option_state(expected_state_id):
         return get_menu_card_target_from_option_state(expected_state_id)
 
-    # 7. 카테고리 이동
+    # 6. 카테고리 이동
     # 예: current 32, expected 64 -> Tea 버튼
     if is_category_state(expected_state_id):
         return TARGET_RECTS.get(expected_state_id)
 
-    # 8. fallback
+    # 7. fallback
     return get_target_for_state(expected_state_id)

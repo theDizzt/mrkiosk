@@ -1206,8 +1206,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hologramTextObject: {fileID: 199323649}
   targetTextMesh: {fileID: 199323651}
-  currentTargetId: 0
-  pythonIpAddress: 192.168.200.100
+  currentTargetId: 1
+  pythonIpAddress: 192.168.0.6
   pythonPort: 5006
 --- !u!1 &2040528778
 GameObject:
