@@ -12,6 +12,13 @@ POSE_MARKER_CENTER = (36.0, 36.0)     # top: 4px + (size 64px / 2)
 STATE_MARKER_CENTER = (988.0, 684.0)  # right: 4px, bottom: 4px 반전 축 중심점
 MARKER_SIZE_PX = 64.0
 
+# 전체 가이드 위치 보정값
+GUIDE_OFFSET_X = 100
+GUIDE_OFFSET_Y = -100
+
+# 전체 가이드 크기 보정값
+GUIDE_SCALE_W = 1.0
+GUIDE_SCALE_H = 1.0
 # ==============================================================================
 # [정밀 동적 보정 완료] 웹 프론트엔드 CSS 레이아웃 그리드 기반 픽셀 좌표 매트릭스
 # ==============================================================================
@@ -131,7 +138,7 @@ def rect_center(rect):
     }
 
 
-def estimate_pixel_to_meter(rvec_ref, tvec_ref, rvec_state=None, tvec_state=None, marker_length=0.05):
+def estimate_pixel_to_meter(rvec_ref, tvec_ref, rvec_state=None, tvec_state=None, marker_length=0.0125):
     """
     [물리 공간 원근 변환 방어 로직]
     디바이스 창 확대/축소 시 일어나는 픽셀 비틀림 오차를 완전히 잡아내며,
@@ -196,13 +203,39 @@ def rect_size_to_world_size(rect, scale_x, scale_y):
         "h": float(rect["h"] * scale_y)
     }
 
+def apply_manual_guide_adjustment(rect):
+    # rect 값이 문자열로 들어와도 계산 가능하도록 숫자로 변환
+    x = float(rect["x"])
+    y = float(rect["y"])
+    w = float(rect["w"])
+    h = float(rect["h"])
+
+    cx = x + w / 2
+    cy = y + h / 2
+
+    new_w = w * GUIDE_SCALE_W
+    new_h = h * GUIDE_SCALE_H
+
+    new_cx = cx + GUIDE_OFFSET_X
+    new_cy = cy + GUIDE_OFFSET_Y
+
+    return {
+        "x": new_cx - new_w / 2,
+        "y": new_cy - new_h / 2,
+        "w": new_w,
+        "h": new_h
+    }
 
 def build_target_payload(rvec_ref, tvec_ref, target, rvec_state=None, tvec_state=None, marker_length=0.05):
     if target is None or "rect" not in target:
         return None
-        
+
     rect = target["rect"]
-    center = rect_center(rect)
+
+    # 수동 좌표 보정 적용
+    adjusted_rect = apply_manual_guide_adjustment(rect)
+
+    center = rect_center(adjusted_rect)
 
     # 정밀 왜곡 제거 스케일 값 획득
     scale_x, scale_y = estimate_pixel_to_meter(
@@ -215,9 +248,14 @@ def build_target_payload(rvec_ref, tvec_ref, target, rvec_state=None, tvec_state
 
     # 월드 공간상의 3D 타겟 바운딩 센터 연산
     world_pos = transform_pixel_to_world(center, rvec_ref, tvec_ref, scale_x, scale_y)
-
+    #print("[TARGET DEBUG]", target.get("name"), target.get("label"))
+    #print("[PIXEL RECT]", adjusted_rect)
+    #print("[PIXEL CENTER]", center)
+    #print("[SCALE]", scale_x, scale_y)
+    #print("[WORLD POS]", world_pos)
     return {
         "world_position": world_pos,
-        "world_size": rect_size_to_world_size(rect, scale_x, scale_y),
+        "world_size": rect_size_to_world_size(adjusted_rect, scale_x, scale_y),
         "label": target.get("label", "Target")
+        
     }
