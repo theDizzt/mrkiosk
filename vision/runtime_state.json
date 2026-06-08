@@ -1,57 +1,38 @@
 {
-  "valid": true,
-  "timestamp": 1780642300.8579018,
+  "valid": false,
+  "timestamp": 1780927611.475683,
   "tracking": {
-    "reference_status": "detected",
-    "state_status": "detected",
-    "reference_missing_count": 0,
-    "state_missing_count": 0
+    "reference_status": "lost",
+    "state_status": "held",
+    "reference_missing_count": 92,
+    "state_missing_count": 2
   },
   "reference": {
     "id": 769,
-    "detected": true,
-    "pose": {
-      "rvec": [
-        2.6815881920477094,
-        -0.09571616701879214,
-        -0.6217491732206797
-      ],
-      "tvec": [
-        -0.5920035528944344,
-        -0.3547890663610172,
-        1.9072942566874533
-      ],
-      "marker_center": [
-        83.0,
-        120.0
-      ],
-      "marker_area": 308.0
-    }
+    "detected": false,
+    "pose": null
   },
   "state_marker": {
-    "detected": true,
-    "id": 0
+    "detected": false,
+    "id": 190
   },
   "fsm": {
     "state": "HOME",
     "label": "메인 화면",
     "state_id": 0,
-    "detected_state_id": 0,
+    "detected_state_id": 190,
     "target_state_id": 32,
     "expected_id": 32,
-    "recovery": false,
-    "message": "same_state",
-    "target": {
-      "world_position": {
-        "x": -0.5601471066474915,
-        "y": -0.4190710186958313,
-        "z": 1.9178746938705444
-      },
-      "world_size": {
-        "w": 0.09609375,
-        "h": 0.043750000000000004
-      },
-      "label": "Coffee 카테고리"
-    }
+    "recovery": true,
+    "message": "invalid_transition",
+    "target_name": "dine_in_button",
+    "target_label": "매장에서 먹고 갈게요",
+    "target_rect": {
+      "x": 252,
+      "y": 345,
+      "w": 520,
+      "h": 84
+    },
+    "target": null
   }
 }

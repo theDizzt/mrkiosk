@@ -314,7 +314,7 @@ Transform:
   m_GameObject: {fileID: 199323649}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.1, z: 0.5}
+  m_LocalPosition: {x: -0.171, y: 0.01, z: 0.5}
   m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -328,7 +328,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 199323649}
-  m_Text: Hello World
+  m_Text: Target_
   m_OffsetZ: 0
   m_CharacterSize: 1
   m_LineSpacing: 1
@@ -1242,8 +1242,12 @@ MonoBehaviour:
   udpReceiver: {fileID: 1321389776}
   runtimeStateReader: {fileID: 1252184046}
   glowRing: {fileID: 2127726019}
-  positionScale: 1
+  useLocalPosition: 1
+  moveLerpSpeed: 8
+  coordinateScale: {x: 1, y: 1, z: 1}
+  positionOffset: {x: 0, y: 0, z: 0}
   scaleFactor: 1.2
+  invertY: 0
 --- !u!4 &2040528780
 Transform:
   m_ObjectHideFlags: 0
